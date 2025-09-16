@@ -17,7 +17,7 @@ public class AlumniController {
         this.alumniService = alumniService;
     }
 
-    // Alumni registration
+
     @PostMapping("/register")
     public Alumni registerAlumni(@RequestBody Alumni alumni) {
         return alumniService.registerAlumni(alumni);
