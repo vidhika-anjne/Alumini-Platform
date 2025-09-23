@@ -1,4 +1,8 @@
 package com.minor.alumini_platform.model;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
 
@@ -10,15 +14,23 @@ public class Alumni {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Enrollment number stays unique for alumni too
     @Column(nullable = false, unique = true)
     private String enrollmentNumber;
-
+    @Column(nullable = false)
     private String name;
+    @Column(nullable = false)
     private String email;
+    @Column(nullable = false)
     private String password;
+    @Column(nullable = false)
     private String passingYear;
+    @Column(nullable = false)
     private String department;
+    private EmploymentStatus employmentStatus;
+
+    @OneToMany(mappedBy = "alumni", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonManagedReference
+    private List<Experience> experiences;
 
     // Getters & Setters
     public Long getId() { return id; }
@@ -41,5 +53,21 @@ public class Alumni {
 
     public String getDepartment() { return department; }
     public void setDepartment(String department) { this.department = department; }
+
+    public EmploymentStatus getEmploymentStatus() { return employmentStatus; }
+    public void setEmploymentStatus(EmploymentStatus employmentStatus) { this.employmentStatus = employmentStatus; }
+
+    
+    public List<Experience> getExperiences() {
+        return experiences;
+    }
+
+    public void setExperiences(List<Experience> experiences) {
+        this.experiences = experiences;
+    }
+    // @ManyToOne
+    // @JoinColumn(name = "alumni_id")
+    // @JsonBackReference
+    // private Alumni alumni;
 }
 

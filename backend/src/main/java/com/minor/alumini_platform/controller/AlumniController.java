@@ -28,7 +28,7 @@ public class AlumniController {
     public List<Alumni> getAllAlumni() {
         return alumniService.getAllAlumni();
     }
-
+    // Alumni login
     @PostMapping("/login")
     public String loginStudent(@RequestParam String enrollmentNumber, @RequestParam String password) {
         Alumni alumni = alumniService.loginAlumni(enrollmentNumber, password);
@@ -44,4 +44,8 @@ public class AlumniController {
     public Alumni getAlumniByEnrollmentNumber(@PathVariable String enrollmentNumber) {
         return alumniService.getAlumniByEnrollmentNumber(enrollmentNumber);
     }
+
+    
+
+
 }
