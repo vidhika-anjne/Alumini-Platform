@@ -34,5 +34,13 @@ public class StudentService {
         return studentRepository.findByEnrollmentNumberAndPassword(enrollmentNumber, password)
                 .orElse(null);
     }
+
+    public List<String> getStudentSkills(String enrollmentNumber) {
+        Student student = studentRepository.findByEnrollmentNumber(enrollmentNumber).orElse(null);
+        if (student != null) {
+            return student.getSkills();
+        }
+        return null;
+    }
 }
 

@@ -1,4 +1,4 @@
-package com.minor.alumini_platform.model;
+package com.minor.alumini_platform.enums;
 
 public enum EmploymentStatus {
     EMPLOYED,

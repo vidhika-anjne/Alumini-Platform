@@ -10,5 +10,6 @@ import java.util.Optional;
 public interface AlumniRepository extends JpaRepository<Alumni, Long> {
     Optional<Alumni> findByEnrollmentNumber(String enrollmentNumber);
     Optional<Alumni> findByEnrollmentNumberAndPassword(String enrollmentNumber, String password);
+    Optional<Alumni> findById(Long id);
 }
 

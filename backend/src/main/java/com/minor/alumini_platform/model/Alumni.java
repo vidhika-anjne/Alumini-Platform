@@ -3,6 +3,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.minor.alumini_platform.enums.EmploymentStatus;
 
 import jakarta.persistence.*;
 
@@ -26,6 +27,8 @@ public class Alumni {
     private String passingYear;
     @Column(nullable = false)
     private String department;
+
+    @Enumerated(EnumType.STRING)
     private EmploymentStatus employmentStatus;
 
     @OneToMany(mappedBy = "alumni", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
@@ -65,9 +68,7 @@ public class Alumni {
     public void setExperiences(List<Experience> experiences) {
         this.experiences = experiences;
     }
-    // @ManyToOne
-    // @JoinColumn(name = "alumni_id")
-    // @JsonBackReference
-    // private Alumni alumni;
+
+
 }
 

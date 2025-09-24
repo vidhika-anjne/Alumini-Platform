@@ -44,4 +44,10 @@ public class StudentController {
     public Student getStudentByEnrollmentNumber(@PathVariable String enrollmentNumber) {
         return studentService.getStudentByEnrollmentNumber(enrollmentNumber);
     }
+
+    @GetMapping("/{enrollmentNumber}/skills")
+    public List<String> getStudentSkills(@PathVariable String enrollmentNumber) {
+        return studentService.getStudentSkills(enrollmentNumber);
+    }
+
 }

@@ -1,7 +1,8 @@
 package com.minor.alumini_platform.controller;
 
 import com.minor.alumini_platform.model.Alumni;
-import com.minor.alumini_platform.model.Student;
+// import com.minor.alumini_platform.enums.EmploymentStatus;
+// import com.minor.alumini_platform.model.Student;
 import com.minor.alumini_platform.service.AlumniService;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +29,7 @@ public class AlumniController {
     public List<Alumni> getAllAlumni() {
         return alumniService.getAllAlumni();
     }
+
     // Alumni login
     @PostMapping("/login")
     public String loginStudent(@RequestParam String enrollmentNumber, @RequestParam String password) {
@@ -45,7 +47,11 @@ public class AlumniController {
         return alumniService.getAlumniByEnrollmentNumber(enrollmentNumber);
     }
 
+    // Update optional fields in alumni profile
+    @PatchMapping("/{enrollmentNumber}")
+    public Alumni updateProfile(@PathVariable String enrollmentNumber, @RequestBody Alumni updates) {
+        return alumniService.updateAlumniProfile(enrollmentNumber, updates);
+    }
+
     
-
-
 }
