@@ -64,6 +64,5 @@ public class Student {
     public List<String> getSkills() { return skills; }
     public void setSkills(List<String> skills) { this.skills = skills; }
 
-
-
+    
 }
