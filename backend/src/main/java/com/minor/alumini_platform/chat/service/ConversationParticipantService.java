@@ -14,9 +14,10 @@ public class ConversationParticipantService {
     private final ConversationParticipantRepository participantRepository;
     private final ConversationRepository conversationRepository;
 
-    public ConversationParticipantService(ConversationParticipantRepository participantRepository) {
+    public ConversationParticipantService(ConversationParticipantRepository participantRepository,
+                                          ConversationRepository conversationRepository) {
         this.participantRepository = participantRepository;
-        this.conversationRepository = null;
+        this.conversationRepository = conversationRepository;
     }
 
     public ConversationParticipant addParticipant(ConversationParticipant participant) {
