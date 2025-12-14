@@ -170,6 +170,12 @@ class HomeTab extends StatelessWidget {
                   ),
                   _buildQuickActionCard(
                     context,
+                    'My Sessions',
+                    Icons.calendar_today,
+                    () => Navigator.of(context).pushNamed('/student-sessions'),
+                  ),
+                  _buildQuickActionCard(
+                    context,
                     'My Profile',
                     Icons.person,
                     () => Navigator.of(context).pushNamed('/profile'),
@@ -180,14 +186,6 @@ class HomeTab extends StatelessWidget {
                     Icons.event,
                     () {
                       // TODO: Navigate to events
-                    },
-                  ),
-                  _buildQuickActionCard(
-                    context,
-                    'Messages',
-                    Icons.message,
-                    () {
-                      // TODO: Navigate to messages
                     },
                   ),
                 ],

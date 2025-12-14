@@ -38,7 +38,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (_formKey.currentState!.validate()) {
       final authService = Provider.of<AuthService>(context, listen: false);
 
-      final success = await authService.register(
+      final result = await authService.register(
         _nameController.text.trim(),
         _emailController.text.trim(),
         _passwordController.text,
@@ -49,22 +49,92 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (mounted) {
-        if (success) {
+        if (result['success']) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Registration successful! Please sign in.'),
+            SnackBar(
+              content: Text(result['message']),
               backgroundColor: Colors.green,
             ),
           );
           Navigator.of(context).pop();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Registration failed. Please try again.'),
+            SnackBar(
+              content: Text(result['message']),
               backgroundColor: Colors.red,
             ),
           );
         }
+      }
+    }
+  }
+
+  void _showOtpDialog() {
+    final otpController = TextEditingController();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Verify OTP'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Please enter the OTP sent to your email:'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: otpController,
+              keyboardType: TextInputType.number,
+              maxLength: 6,
+              decoration: const InputDecoration(
+                labelText: 'OTP',
+                hintText: 'Enter 6-digit OTP',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await _verifyOtp(otpController.text);
+              Navigator.of(context).pop();
+            },
+            child: const Text('Verify'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _verifyOtp(String otp) async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+
+    final result =
+        await authService.verifyOtp(_emailController.text.trim(), otp);
+
+    if (mounted) {
+      if (result['success']) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message']),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.of(context).pop(); // Close register screen
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message']),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }

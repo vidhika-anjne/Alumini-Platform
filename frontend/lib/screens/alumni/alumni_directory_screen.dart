@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../models/alumni.dart';
+import '../../services/alumni_service.dart';
+import '../../services/auth_service.dart';
+import '../../services/mentor_session_service.dart';
 
 class AlumniDirectoryScreen extends StatefulWidget {
   const AlumniDirectoryScreen({super.key});
@@ -27,69 +31,29 @@ class _AlumniDirectoryScreenState extends State<AlumniDirectoryScreen> {
   }
 
   Future<void> _loadAlumni() async {
-    // TODO: Replace with actual API call
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final alumniService = AlumniService(authService);
+      final alumni = await alumniService.getAllAlumni();
 
-    // Mock data for demonstration
-    final mockAlumni = [
-      Alumni(
-        id: 1,
-        enrollmentNumber: 'EN001',
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        password: '',
-        passingYear: '2020',
-        department: 'Computer Science',
-        employmentStatus: 'EMPLOYED',
-        experiences: [
-          Experience(
-            companyName: 'Tech Corp',
-            position: 'Software Engineer',
-            startDate: '2020-06-01',
-          )
-        ],
-      ),
-      Alumni(
-        id: 2,
-        enrollmentNumber: 'EN002',
-        name: 'Jane Smith',
-        email: 'jane.smith@example.com',
-        password: '',
-        passingYear: '2019',
-        department: 'Design',
-        employmentStatus: 'EMPLOYED',
-        experiences: [
-          Experience(
-            companyName: 'Design Studio',
-            position: 'UI/UX Designer',
-            startDate: '2019-08-01',
-          )
-        ],
-      ),
-      Alumni(
-        id: 3,
-        enrollmentNumber: 'EN003',
-        name: 'Mike Johnson',
-        email: 'mike.johnson@example.com',
-        password: '',
-        passingYear: '2021',
-        department: 'Business Administration',
-        employmentStatus: 'EMPLOYED',
-        experiences: [
-          Experience(
-            companyName: 'Business Solutions',
-            position: 'Business Analyst',
-            startDate: '2021-07-01',
-          )
-        ],
-      ),
-    ];
-
-    setState(() {
-      _alumni = mockAlumni;
-      _filteredAlumni = mockAlumni;
-      _isLoading = false;
-    });
+      setState(() {
+        _alumni = alumni;
+        _filteredAlumni = alumni;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load alumni: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _filterAlumni(String query) {
@@ -307,34 +271,226 @@ class _AlumniDirectoryScreenState extends State<AlumniDirectoryScreen> {
                       .toList()),
             ],
             const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      // TODO: Implement email functionality
-                    },
-                    icon: const Icon(Icons.email),
-                    label: const Text('Email'),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      // TODO: Implement connect functionality
-                    },
-                    icon: const Icon(Icons.person_add),
-                    label: const Text('Connect'),
-                  ),
-                ),
-              ],
+            Consumer<AuthService>(
+              builder: (context, authService, child) {
+                final isStudent = authService.userType == 'student';
+
+                return Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              // TODO: Implement email functionality
+                            },
+                            icon: const Icon(Icons.email),
+                            label: const Text('Email'),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              // TODO: Implement connect functionality
+                            },
+                            icon: const Icon(Icons.person_add),
+                            label: const Text('Connect'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (isStudent) ...[
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            _showBookSessionDialog(alumni);
+                          },
+                          icon: const Icon(Icons.schedule),
+                          label: const Text('Book Mentorship Session'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 16),
           ],
         ),
       ),
     );
+  }
+
+  void _showBookSessionDialog(Alumni alumni) {
+    final topicController = TextEditingController();
+    final descriptionController = TextEditingController();
+    DateTime selectedDate = DateTime.now().add(const Duration(days: 1));
+    TimeOfDay selectedTime = const TimeOfDay(hour: 10, minute: 0);
+    int duration = 30;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text('Book Session with ${alumni.name}'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: topicController,
+                  decoration: const InputDecoration(
+                    labelText: 'Session Topic',
+                    hintText: 'e.g., Career Guidance, Technical Interview Prep',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: descriptionController,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: 'Description',
+                    hintText: 'Describe what you want to discuss...',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          final date = await showDatePicker(
+                            context: context,
+                            initialDate: selectedDate,
+                            firstDate: DateTime.now(),
+                            lastDate:
+                                DateTime.now().add(const Duration(days: 30)),
+                          );
+                          if (date != null) {
+                            setState(() => selectedDate = date);
+                          }
+                        },
+                        icon: const Icon(Icons.calendar_today),
+                        label: Text(
+                            '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}'),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          final time = await showTimePicker(
+                            context: context,
+                            initialTime: selectedTime,
+                          );
+                          if (time != null) {
+                            setState(() => selectedTime = time);
+                          }
+                        },
+                        icon: const Icon(Icons.access_time),
+                        label: Text(
+                            '${selectedTime.hour}:${selectedTime.minute.toString().padLeft(2, '0')}'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<int>(
+                  value: duration,
+                  decoration: const InputDecoration(
+                    labelText: 'Duration',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 30, child: Text('30 minutes')),
+                    DropdownMenuItem(value: 60, child: Text('1 hour')),
+                    DropdownMenuItem(value: 90, child: Text('1.5 hours')),
+                    DropdownMenuItem(value: 120, child: Text('2 hours')),
+                  ],
+                  onChanged: (value) => setState(() => duration = value ?? 30),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (topicController.text.isNotEmpty) {
+                  await _bookSession(
+                    alumni,
+                    DateTime(
+                        selectedDate.year,
+                        selectedDate.month,
+                        selectedDate.day,
+                        selectedTime.hour,
+                        selectedTime.minute),
+                    duration,
+                    topicController.text,
+                    descriptionController.text,
+                  );
+                  Navigator.of(context).pop();
+                }
+              },
+              child: const Text('Book Session'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _bookSession(Alumni alumni, DateTime sessionDateTime,
+      int duration, String topic, String description) async {
+    try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final studentEnrollment = authService.currentStudent?.enrollmentNumber;
+
+      if (studentEnrollment == null) {
+        throw Exception('Student not found');
+      }
+
+      final sessionService = MentorSessionService(authService);
+      final result = await sessionService.bookSession(
+        studentEnrollment: studentEnrollment,
+        alumniEnrollment: alumni.enrollmentNumber,
+        sessionDateTime: sessionDateTime,
+        durationMinutes: duration,
+        topic: topic,
+        description: description,
+      );
+
+      if (result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Session booked successfully! 🎉'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        throw Exception(result['message'] ?? 'Unknown error');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to book session: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Widget _buildInfoCard(String title, List<String> items) {

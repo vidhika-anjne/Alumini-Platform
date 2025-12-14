@@ -7,6 +7,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  alumni_platform_frontend:
+    path: ../..
   dtd: ^4.0.0
   flutter_lints: ^6.0.0
   google_fonts: ^6.3.3
@@ -15,8 +17,6 @@ dependencies:
   stack_trace: ^1.12.1
   url_launcher: ^6.3.2
   web: ^1.1.1
-  alumni_platform_frontend:
-    path: ../..
 flutter:
   uses-material-design: true
 dependency_overrides:

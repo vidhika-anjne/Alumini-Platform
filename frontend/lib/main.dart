@@ -7,6 +7,7 @@ import 'screens/auth/register_screen.dart';
 import 'screens/home/dashboard_screen.dart';
 import 'screens/profile/profile_screen.dart';
 import 'screens/alumni/alumni_directory_screen.dart';
+import 'screens/sessions/student_sessions_screen.dart';
 
 void main() {
   runApp(const AlumniPlatformApp());
@@ -53,6 +54,7 @@ class AlumniPlatformApp extends StatelessWidget {
           '/dashboard': (context) => const DashboardScreen(),
           '/profile': (context) => const ProfileScreen(),
           '/alumni-directory': (context) => const AlumniDirectoryScreen(),
+          '/student-sessions': (context) => const StudentSessionsScreen(),
         },
       ),
     );

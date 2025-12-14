@@ -1,0 +1,1 @@
+ C:\\Users\\vanda\\OneDrive\\Desktop\\Alumini-Platform\\frontend\\.dart_tool\\flutter_build\\d1a67539b70c17af2bd7d19d894ebdd7\\dart_build_result.json: 

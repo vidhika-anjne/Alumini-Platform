@@ -18,7 +18,20 @@ public class AlumniService {
     }
 
     public Alumni registerAlumni(Alumni alumni) {
-        return alumniRepository.save(alumni);
+        try {
+            return alumniRepository.save(alumni);
+        } catch (Exception e) {
+            if (e.getMessage().contains("Duplicate entry") || e.getMessage().contains("ConstraintViolationException")) {
+                if (e.getMessage().contains("enrollment_number")) {
+                    throw new RuntimeException("Enrollment number already exists");
+                } else if (e.getMessage().contains("email")) {
+                    throw new RuntimeException("Email address already exists");
+                } else {
+                    throw new RuntimeException("Duplicate data found");
+                }
+            }
+            throw new RuntimeException("Registration failed: " + e.getMessage());
+        }
     }
 
     public List<Alumni> getAllAlumni() {

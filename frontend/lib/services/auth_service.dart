@@ -7,6 +7,8 @@ import '../models/student.dart';
 
 class AuthService extends ChangeNotifier {
   static const String baseUrl = 'http://localhost:8080/api/v1';
+  // static const String baseUrl = 'http://10.64.114.74:8080/';
+
   Alumni? _currentAlumni;
   Student? _currentStudent;
   String? _userType;
@@ -57,20 +59,17 @@ class AuthService extends ChangeNotifier {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/alumni/login'),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body:
-            'enrollmentNumber=${Uri.encodeComponent(enrollmentNumber)}&password=${Uri.encodeComponent(password)}',
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'enrollmentNumber': enrollmentNumber,
+          'password': password,
+        }),
       );
 
-      if (response.statusCode == 200 &&
-          response.body.contains('Login successful')) {
-        final alumniResponse = await http.get(
-          Uri.parse('$baseUrl/alumni/$enrollmentNumber'),
-          headers: {'Content-Type': 'application/json'},
-        );
-
-        if (alumniResponse.statusCode == 200) {
-          _currentAlumni = Alumni.fromJson(json.decode(alumniResponse.body));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true && data['alumni'] != null) {
+          _currentAlumni = Alumni.fromJson(data['alumni']);
           _userType = 'alumni';
 
           final prefs = await SharedPreferences.getInstance();
@@ -101,20 +100,17 @@ class AuthService extends ChangeNotifier {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/students/login'),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body:
-            'enrollmentNumber=${Uri.encodeComponent(enrollmentNumber)}&password=${Uri.encodeComponent(password)}',
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'enrollmentNumber': enrollmentNumber,
+          'password': password,
+        }),
       );
 
-      if (response.statusCode == 200 &&
-          response.body.contains('Login successful')) {
-        final studentResponse = await http.get(
-          Uri.parse('$baseUrl/students/$enrollmentNumber'),
-          headers: {'Content-Type': 'application/json'},
-        );
-
-        if (studentResponse.statusCode == 200) {
-          _currentStudent = Student.fromJson(json.decode(studentResponse.body));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true && data['student'] != null) {
+          _currentStudent = Student.fromJson(data['student']);
           _userType = 'student';
 
           final prefs = await SharedPreferences.getInstance();
@@ -138,8 +134,13 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  Future<bool> register(String name, String email, String password,
-      String enrollmentNumber, String passingYear, String department,
+  Future<Map<String, dynamic>> register(
+      String name,
+      String email,
+      String password,
+      String enrollmentNumber,
+      String passingYear,
+      String department,
       {bool isAlumni = false}) async {
     if (isAlumni) {
       return await registerAlumni(Alumni(
@@ -164,7 +165,7 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  Future<bool> registerAlumni(Alumni alumni) async {
+  Future<Map<String, dynamic>> registerAlumni(Alumni alumni) async {
     _isLoading = true;
     notifyListeners();
 
@@ -177,15 +178,38 @@ class AuthService extends ChangeNotifier {
 
       _isLoading = false;
       notifyListeners();
-      return response.statusCode == 200;
+
+      // Handle both success (200) and error (400, etc.) responses
+      try {
+        final data = json.decode(response.body);
+        return {
+          'success': data['success'] ?? (response.statusCode == 200),
+          'message': data['message'] ??
+              (response.statusCode == 200
+                  ? 'Alumni registered successfully!'
+                  : 'Registration failed'),
+          'requiresOtp': false
+        };
+      } catch (e) {
+        return {
+          'success': false,
+          'message': 'Registration failed: Invalid response from server',
+          'requiresOtp': false
+        };
+      }
     } catch (e) {
       _isLoading = false;
       notifyListeners();
-      return false;
+      return {
+        'success': false,
+        'message':
+            'Network error: Unable to connect to server. Please check your connection.',
+        'requiresOtp': false
+      };
     }
   }
 
-  Future<bool> registerStudent(Student student) async {
+  Future<Map<String, dynamic>> registerStudent(Student student) async {
     _isLoading = true;
     notifyListeners();
 
@@ -198,11 +222,30 @@ class AuthService extends ChangeNotifier {
 
       _isLoading = false;
       notifyListeners();
-      return response.statusCode == 200;
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'success': data['success'] ?? true,
+          'message': data['message'] ?? 'Student registered successfully!',
+          'requiresOtp': false // No OTP required in current implementation
+        };
+      } else {
+        final data = json.decode(response.body);
+        return {
+          'success': false,
+          'message': data['message'] ?? 'Registration failed',
+          'requiresOtp': false
+        };
+      }
     } catch (e) {
       _isLoading = false;
       notifyListeners();
-      return false;
+      return {
+        'success': false,
+        'message': 'Network error: $e',
+        'requiresOtp': false
+      };
     }
   }
 
@@ -216,6 +259,34 @@ class AuthService extends ChangeNotifier {
     await prefs.remove('current_user');
 
     notifyListeners();
+  }
+
+  Future<Map<String, dynamic>> verifyOtp(String email, String otp) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/students/verify-otp'),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body:
+            'email=${Uri.encodeComponent(email)}&otp=${Uri.encodeComponent(otp)}',
+      );
+
+      _isLoading = false;
+      notifyListeners();
+
+      if (response.statusCode == 200 &&
+          response.body.contains('Registration complete')) {
+        return {'success': true, 'message': response.body};
+      } else {
+        return {'success': false, 'message': response.body};
+      }
+    } catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      return {'success': false, 'message': 'Network error: $e'};
+    }
   }
 
   Map<String, String> getAuthHeaders() {

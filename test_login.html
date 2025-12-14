@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Login</title>
+</head>
+<body>
+    <h1>Test Login Functionality</h1>
+    
+    <h2>Alumni Login</h2>
+    <button onclick="testAlumniLogin()">Test Alumni Login (ALU2024)</button>
+    
+    <h2>Student Login</h2>
+    <button onclick="testStudentLogin()">Test Student Login (TEST999)</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function testAlumniLogin() {
+            try {
+                const response = await fetch('http://localhost:8080/api/v1/alumni/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        enrollmentNumber: 'ALU2024',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                document.getElementById('result').innerHTML = '<h3>Alumni Login Response:</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<h3>Alumni Login Error:</h3><pre>' + error.message + '</pre>';
+            }
+        }
+
+        async function testStudentLogin() {
+            try {
+                const response = await fetch('http://localhost:8080/api/v1/students/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        enrollmentNumber: 'TEST999',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                document.getElementById('result').innerHTML = '<h3>Student Login Response:</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<h3>Student Login Error:</h3><pre>' + error.message + '</pre>';
+            }
+        }
+    </script>
+</body>
+</html>

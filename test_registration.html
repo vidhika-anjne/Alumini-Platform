@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Registration</title>
+</head>
+<body>
+    <h1>Test Alumni Registration</h1>
+    <button onclick="testAlumniRegistration()">Test Alumni Registration</button>
+    <button onclick="testStudentRegistration()">Test Student Registration</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAlumniRegistration() {
+            try {
+                const response = await fetch('http://localhost:8080/api/v1/alumni/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        enrollmentNumber: 'ALU456',
+                        name: 'Test Alumni Web',
+                        email: 'testweb@alumni.com',
+                        password: 'password123',
+                        passingYear: '2020',
+                        department: 'Computer Science',
+                        employmentStatus: 'EMPLOYED'
+                    })
+                });
+                
+                const data = await response.json();
+                document.getElementById('result').innerHTML = '<h3>Alumni Registration Response:</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<h3>Alumni Registration Error:</h3><pre>' + error.message + '</pre>';
+                console.error('Error:', error);
+            }
+        }
+
+        async function testStudentRegistration() {
+            try {
+                const response = await fetch('http://localhost:8080/api/v1/students/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        enrollmentNumber: 'STU456',
+                        name: 'Test Student Web',
+                        password: 'password123',
+                        status: 'PENDING',
+                        email: 'testweb@student.com',
+                        passingYear: 2024
+                    })
+                });
+                
+                const data = await response.text(); // Student returns text, not JSON
+                document.getElementById('result').innerHTML = '<h3>Student Registration Response:</h3><pre>' + data + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<h3>Student Registration Error:</h3><pre>' + error.message + '</pre>';
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
