@@ -1,7 +1,7 @@
 package com.minor.alumini_platform.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.*;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "posts")
@@ -21,7 +21,6 @@ public class Post {
     @JsonBackReference
     private Alumni alumni; // who created the post
 
-    
 
     // Getters and setters
     public Long getId() { return id; }

@@ -1,6 +1,6 @@
 package com.minor.alumini_platform.model;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;

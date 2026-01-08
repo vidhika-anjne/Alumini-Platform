@@ -1,6 +1,6 @@
 package com.minor.alumini_platform.model;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 
 import java.util.List;
 // import com.minor.alumini_platform.enums.EmploymentStatus;
@@ -28,7 +28,7 @@ public class Student {
     // public enum Status {
     //     PENDING, APPROVED, REJECTED
     // }
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String email;
     private Integer passingYear;
     private String bio;

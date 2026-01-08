@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.minor.alumini_platform.enums.EmploymentStatus;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "alumni")
@@ -24,9 +24,9 @@ public class Alumni {
     private String email;
     @Column(nullable = false)
     private String password;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String passingYear;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String department;
 
     @Enumerated(EnumType.STRING)
@@ -37,6 +37,7 @@ public class Alumni {
     private List<Experience> experiences;
 
     @OneToMany(mappedBy = "alumni", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Post> posts;
 
     // Getters & Setters

@@ -2,7 +2,7 @@ package com.minor.alumini_platform.chat.model;
 
 // package com.minor.alumini_platform.model;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "conversation_participants", uniqueConstraints = {

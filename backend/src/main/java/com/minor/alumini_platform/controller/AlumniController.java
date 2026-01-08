@@ -1,43 +1,125 @@
 package com.minor.alumini_platform.controller;
 
 import com.minor.alumini_platform.model.Alumni;
-// import com.minor.alumini_platform.enums.EmploymentStatus;
-// import com.minor.alumini_platform.model.Student;
 import com.minor.alumini_platform.service.AlumniService;
+import com.minor.alumini_platform.security.JwtUtil;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("api/v1/alumni")
+@RequestMapping("/api/v1/alumni")
+@CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
 public class AlumniController {
 
     private final AlumniService alumniService;
+    private final JwtUtil jwtUtil;
 
-    public AlumniController(AlumniService alumniService) {
+    public AlumniController(AlumniService alumniService, JwtUtil jwtUtil) {
         this.alumniService = alumniService;
+        this.jwtUtil = jwtUtil;
     }
 
     // Alumni registration
     @PostMapping("/register")
-    public Alumni registerAlumni(@RequestBody Alumni alumni) {
-        return alumniService.registerAlumni(alumni);
-    }
-
-    // View all alumni
-    @GetMapping
-    public List<Alumni> getAllAlumni() {
-        return alumniService.getAllAlumni();
+    public ResponseEntity<Map<String, Object>> registerAlumni(@RequestBody Alumni alumni) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Validate required fields
+            if (alumni.getEnrollmentNumber() == null || alumni.getEnrollmentNumber().trim().isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Enrollment number is required");
+                return ResponseEntity.badRequest().body(response);
+            }
+            if (alumni.getName() == null || alumni.getName().trim().isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Name is required");
+                return ResponseEntity.badRequest().body(response);
+            }
+            if (alumni.getEmail() == null || alumni.getEmail().trim().isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Email is required");
+                return ResponseEntity.badRequest().body(response);
+            }
+            if (alumni.getPassword() == null || alumni.getPassword().trim().isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Password is required");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Check if alumni already exists
+            if (alumniService.getAlumniByEnrollmentNumber(alumni.getEnrollmentNumber()) != null) {
+                response.put("success", false);
+                response.put("message", "Alumni with this enrollment number already exists");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Set default values for optional fields
+            if (alumni.getPassingYear() == null || alumni.getPassingYear().trim().isEmpty()) {
+                alumni.setPassingYear("2020"); // Default year
+            }
+            if (alumni.getDepartment() == null || alumni.getDepartment().trim().isEmpty()) {
+                alumni.setDepartment("Computer Science"); // Default department
+            }
+            
+            Alumni savedAlumni = alumniService.registerAlumni(alumni);
+            response.put("success", true);
+            response.put("message", "Alumni registered successfully");
+            response.put("alumni", savedAlumni);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Registration failed: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
     // Alumni login
     @PostMapping("/login")
-    public String loginStudent(@RequestParam String enrollmentNumber, @RequestParam String password) {
-        Alumni alumni = alumniService.loginAlumni(enrollmentNumber, password);
-        if (alumni != null) {
-            return "✅ Login successful! Welcome " + alumni.getName();
-        } else {
-            return "❌ Invalid username or password";
+    public ResponseEntity<Map<String, Object>> loginAlumni(@RequestBody Map<String, String> loginRequest) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            String enrollmentNumber = loginRequest.get("enrollmentNumber");
+            String password = loginRequest.get("password");
+            
+            if (enrollmentNumber == null || password == null) {
+                response.put("success", false);
+                response.put("message", "Enrollment number and password are required");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            Alumni alumni = alumniService.loginAlumni(enrollmentNumber, password);
+            if (alumni != null) {
+                String token = jwtUtil.generateToken(alumni.getEnrollmentNumber(), "ALUMNI");
+                response.put("success", true);
+                response.put("message", "Login successful! Welcome " + alumni.getName());
+                response.put("token", token);
+                response.put("alumni", alumni);
+                response.put("userType", "alumni");
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("message", "Invalid enrollment number or password");
+                return ResponseEntity.badRequest().body(response);
+            }
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Login failed: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    // View all alumni
+    @GetMapping
+    public ResponseEntity<List<Alumni>> getAllAlumni() {
+        try {
+            List<Alumni> alumni = alumniService.getAllAlumni();
+            return ResponseEntity.ok(alumni);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
