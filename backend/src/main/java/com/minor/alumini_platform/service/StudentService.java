@@ -1,6 +1,7 @@
 package com.minor.alumini_platform.service;
 import com.minor.alumini_platform.model.Student;
 import com.minor.alumini_platform.repository.StudentRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -9,13 +10,16 @@ import java.util.List;
 public class StudentService {
 
     private final StudentRepository studentRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public StudentService(StudentRepository studentRepository) {
+    public StudentService(StudentRepository studentRepository, PasswordEncoder passwordEncoder) {
         this.studentRepository = studentRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public Student registerStudent(Student student) {
         try {
+            student.setPassword(passwordEncoder.encode(student.getPassword()));
             return studentRepository.save(student);
         } catch (Exception e) {
             if (e.getMessage().contains("Duplicate entry") || e.getMessage().contains("ConstraintViolationException")) {
@@ -40,11 +44,17 @@ public class StudentService {
     }
 
     public Student updateStudent(Student student) {
+        if (student.getPassword() != null && !student.getPassword().startsWith("$2a$")) {
+            student.setPassword(passwordEncoder.encode(student.getPassword()));
+        }
         return studentRepository.save(student);
     }
     public Student loginStudent(String enrollmentNumber, String password) {
-        return studentRepository.findByEnrollmentNumberAndPassword(enrollmentNumber, password)
-                .orElse(null);
+        Student student = studentRepository.findByEnrollmentNumber(enrollmentNumber).orElse(null);
+        if (student != null && passwordEncoder.matches(password, student.getPassword())) {
+            return student;
+        }
+        return null;
     }
 
     public List<String> getStudentSkills(String enrollmentNumber) {

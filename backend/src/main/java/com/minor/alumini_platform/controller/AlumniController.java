@@ -2,6 +2,7 @@ package com.minor.alumini_platform.controller;
 
 import com.minor.alumini_platform.model.Alumni;
 import com.minor.alumini_platform.service.AlumniService;
+import com.minor.alumini_platform.security.JwtUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,9 +16,11 @@ import java.util.Map;
 public class AlumniController {
 
     private final AlumniService alumniService;
+    private final JwtUtil jwtUtil;
 
-    public AlumniController(AlumniService alumniService) {
+    public AlumniController(AlumniService alumniService, JwtUtil jwtUtil) {
         this.alumniService = alumniService;
+        this.jwtUtil = jwtUtil;
     }
 
     // Alumni registration
@@ -90,8 +93,10 @@ public class AlumniController {
             
             Alumni alumni = alumniService.loginAlumni(enrollmentNumber, password);
             if (alumni != null) {
+                String token = jwtUtil.generateToken(alumni.getEnrollmentNumber(), "ALUMNI");
                 response.put("success", true);
                 response.put("message", "Login successful! Welcome " + alumni.getName());
+                response.put("token", token);
                 response.put("alumni", alumni);
                 response.put("userType", "alumni");
                 return ResponseEntity.ok(response);

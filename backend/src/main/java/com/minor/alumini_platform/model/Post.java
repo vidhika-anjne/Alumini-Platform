@@ -21,7 +21,6 @@ public class Post {
     @JsonBackReference
     private Alumni alumni; // who created the post
 
-    
 
     // Getters and setters
     public Long getId() { return id; }

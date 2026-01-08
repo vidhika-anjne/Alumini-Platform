@@ -4,6 +4,7 @@ import com.minor.alumini_platform.model.Alumni;
 import com.minor.alumini_platform.model.Experience;
 import com.minor.alumini_platform.model.Student;
 import com.minor.alumini_platform.repository.AlumniRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,13 +13,16 @@ import java.util.List;
 public class AlumniService {
 
     private final AlumniRepository alumniRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AlumniService(AlumniRepository alumniRepository) {
+    public AlumniService(AlumniRepository alumniRepository, PasswordEncoder passwordEncoder) {
         this.alumniRepository = alumniRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public Alumni registerAlumni(Alumni alumni) {
         try {
+            alumni.setPassword(passwordEncoder.encode(alumni.getPassword()));
             return alumniRepository.save(alumni);
         } catch (Exception e) {
             if (e.getMessage().contains("Duplicate entry") || e.getMessage().contains("ConstraintViolationException")) {
@@ -43,8 +47,11 @@ public class AlumniService {
     }
 
     public Alumni loginAlumni(String enrollmentNumber, String password) {
-        return alumniRepository.findByEnrollmentNumberAndPassword(enrollmentNumber, password)
-                .orElse(null);
+        Alumni alumni = alumniRepository.findByEnrollmentNumber(enrollmentNumber).orElse(null);
+        if (alumni != null && passwordEncoder.matches(password, alumni.getPassword())) {
+            return alumni;
+        }
+        return null;
     }
 
     public Alumni updateAlumniProfile(String enrollmentNumber, Alumni updates) {
@@ -66,8 +73,8 @@ public class AlumniService {
         if (updates.getEmail() != null) {
             alumni.setEmail(updates.getEmail());
         }
-        if (updates.getPassword() != null) {
-            alumni.setPassword(updates.getPassword());
+        if (updates.getPassword() != null && !updates.getPassword().startsWith("$2a$")) {
+            alumni.setPassword(passwordEncoder.encode(updates.getPassword()));
         }
 
         if( updates.getExperiences() != null) {

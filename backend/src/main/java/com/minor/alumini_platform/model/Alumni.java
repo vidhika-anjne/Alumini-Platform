@@ -37,6 +37,7 @@ public class Alumni {
     private List<Experience> experiences;
 
     @OneToMany(mappedBy = "alumni", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Post> posts;
 
     // Getters & Setters

@@ -2,6 +2,7 @@ package com.minor.alumini_platform.controller;
 
 import com.minor.alumini_platform.model.Student;
 import com.minor.alumini_platform.service.StudentService;
+import com.minor.alumini_platform.security.JwtUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,9 +16,11 @@ import java.util.Map;
 public class StudentController {
 
     private final StudentService studentService;
+    private final JwtUtil jwtUtil;
 
-    public StudentController(StudentService studentService) {
+    public StudentController(StudentService studentService, JwtUtil jwtUtil) {
         this.studentService = studentService;
+        this.jwtUtil = jwtUtil;
     }
 
     // Student registration
@@ -87,8 +90,10 @@ public class StudentController {
             
             Student student = studentService.loginStudent(enrollmentNumber, password);
             if (student != null) {
+                String token = jwtUtil.generateToken(student.getEnrollmentNumber(), "STUDENT");
                 response.put("success", true);
                 response.put("message", "Login successful! Welcome " + student.getName());
+                response.put("token", token);
                 response.put("student", student);
                 response.put("userType", "student");
                 return ResponseEntity.ok(response);
@@ -155,6 +160,37 @@ public class StudentController {
             response.put("success", false);
             response.put("message", "Failed to fetch student skills: " + e.getMessage());
             return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    // Update student profile
+    @PatchMapping("/{enrollmentNumber}")
+    public ResponseEntity<Map<String, Object>> updateStudent(@PathVariable String enrollmentNumber, @RequestBody Student student) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Student existingStudent = studentService.getStudentByEnrollmentNumber(enrollmentNumber);
+            if (existingStudent == null) {
+                response.put("success", false);
+                response.put("message", "Student not found");
+                return ResponseEntity.notFound().build();
+            }
+            
+            // Merge updates
+            if (student.getName() != null) existingStudent.setName(student.getName());
+            if (student.getEmail() != null) existingStudent.setEmail(student.getEmail());
+            if (student.getBio() != null) existingStudent.setBio(student.getBio());
+            if (student.getSkills() != null) existingStudent.setSkills(student.getSkills());
+            if (student.getPassingYear() != null) existingStudent.setPassingYear(student.getPassingYear());
+            if (student.getPassword() != null) existingStudent.setPassword(student.getPassword());
+
+            Student updated = studentService.updateStudent(existingStudent);
+            response.put("success", true);
+            response.put("student", updated);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Update failed: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
     }
 }
