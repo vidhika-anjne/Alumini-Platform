@@ -1,0 +1,111 @@
+# Root .gitignore for Alumni Platform
+# Covers: Java/Maven backend, Vite/React frontend, IDE + OS artifacts
+
+############################
+# OS / Editor junk
+############################
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# IntelliJ / JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.project
+.classpath
+.factorypath
+.settings/
+
+############################
+# Node / Frontend (Vite/React)
+############################
+node_modules/
+dist/
+.temp/
+.cache/
+.npm/
+.pnp.*
+.eslintcache
+stylelintcache
+.nyc_output/
+coverage/
+*.tsbuildinfo
+
+# Vite cache (typically inside node_modules, covered above)
+# node_modules/.vite/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Env files (frontend and general)
+.env
+.env.*
+.env.local
+.env.*.local
+
+############################
+# Java / Maven backend
+############################
+# Build outputs
+**/target/
+
+# Compiled / packaged artifacts
+*.class
+*.jar
+*.war
+*.ear
+
+# Spring / app runtime
+logs/
+*.log
+
+# Local application config (keep example, ignore real)
+backend/src/main/resources/application.properties
+backend/src/test/resources/application.properties
+
+# Maven Wrapper (keep wrapper files; nothing to ignore here intentionally)
+# .mvn/ (do NOT ignore; wrapper belongs in VCS)
+
+############################
+# Database / tooling
+############################
+# Common local DB files
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+############################
+# Misc
+############################
+# Editor swap/backup
+*.swp
+*.swo
+*.orig
+*.bak
