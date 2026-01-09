@@ -1,5 +1,6 @@
 package com.minor.alumini_platform.chat.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ public class Conversation {
 
     //link to participants
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<ConversationParticipant> participants = new ArrayList<>();
 
     // getters and setters
