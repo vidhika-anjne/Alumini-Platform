@@ -8,4 +8,5 @@ public class MessageResponse {
     public String mediaUrl;
     public LocalDateTime sentAt;
     public Long conversationId;
+    public String status;
 }

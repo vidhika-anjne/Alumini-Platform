@@ -61,6 +61,13 @@ public class MessageService {
         return messages.stream().map(this::toDto).collect(Collectors.toList());
     }
 
+    public Message updateStatus(Long messageId, MessageStatus status) {
+        Message m = messageRepository.findById(messageId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Message not found"));
+        m.setStatus(status);
+        return messageRepository.save(m);
+    }
+
     public MessageResponse toDto(Message m) {
         MessageResponse r = new MessageResponse();
         r.id = m.getId();
@@ -69,6 +76,7 @@ public class MessageService {
         r.mediaUrl = m.getMediaUrl();
         r.sentAt = m.getSentAt();
         r.conversationId = m.getConversation().getId();
+        r.status = m.getStatus().name();
         return r;
     }
 }

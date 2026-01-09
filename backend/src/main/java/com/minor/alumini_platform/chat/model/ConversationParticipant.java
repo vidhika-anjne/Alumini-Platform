@@ -2,6 +2,7 @@ package com.minor.alumini_platform.chat.model;
 
 // package com.minor.alumini_platform.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import javax.persistence.*;
 
 @Entity
@@ -20,6 +21,7 @@ public class ConversationParticipant {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "conversation_id", nullable = false)
+    @JsonBackReference
     private Conversation conversation;
 
     // Getters & Setters
