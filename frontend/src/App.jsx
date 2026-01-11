@@ -3,18 +3,41 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Feed from './pages/Feed'
 import Profile from './pages/Profile'
+import Chat from './pages/Chat'
+import Mentors from './pages/Mentors'
+import Stories from './pages/Stories'
+import Dashboard from './pages/Dashboard'
 import Navbar from './components/Navbar'
 import ProtectedRoute from './components/ProtectedRoute'
+import ErrorBoundary from './components/ErrorBoundary'
 
 export default function App() {
   return (
     <div style={{ fontFamily: 'Inter, system-ui, Arial' }}>
       <Navbar />
+      <ErrorBoundary>
       <Routes>
-        <Route path="/" element={<Navigate to="/feed" replace />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/feed" element={<Feed />} />
+        <Route
+          path="/mentors"
+          element={
+            <ProtectedRoute>
+              <Mentors />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/stories" element={<Stories />} />
         <Route
           path="/profile"
           element={
@@ -23,7 +46,16 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute>
+              <Chat />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
+      </ErrorBoundary>
     </div>
   )
 }

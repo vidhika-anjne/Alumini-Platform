@@ -50,7 +50,15 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
-  const value = { token, userType, user, login, register, logout }
+  // Allow updating the current user object (frontend-only fields like social links)
+  const updateUser = (updates) => {
+    setUser((prev) => {
+      const next = typeof updates === 'function' ? updates(prev) : { ...(prev || {}), ...(updates || {}) }
+      return next
+    })
+  }
+
+  const value = { token, userType, user, login, register, logout, updateUser }
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 

@@ -14,7 +14,7 @@ export default function Login() {
     e.preventDefault()
     setError('')
     try {
-      await login(role, enrollmentNumber, password)
+      await login(role, enrollmentNumber.trim(), password.trim())
       nav('/feed')
     } catch (err) {
       setError(err?.response?.data?.message || 'Login failed')

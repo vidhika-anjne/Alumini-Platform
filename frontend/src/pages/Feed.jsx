@@ -9,7 +9,8 @@ export default function Feed() {
 
   const load = async () => {
     const { data } = await api.get('/api/v1/posts')
-    setPosts(data || [])
+    const items = Array.isArray(data?.content) ? data.content : []
+    setPosts(items)
   }
 
   useEffect(() => { load() }, [])
@@ -19,7 +20,7 @@ export default function Feed() {
       <h2>Feed</h2>
       {userType === 'alumni' && <PostForm onCreated={() => load()} />}
       <div className="grid">
-        {posts.map((p) => (
+        {Array.isArray(posts) && posts.map((p) => (
           <article key={p.id} className="card">
             <p>{p.content}</p>
             {p.mediaUrl && (
