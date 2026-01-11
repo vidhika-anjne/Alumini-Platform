@@ -36,6 +36,9 @@ public class Student {
     @ElementCollection
     private List<String> skills;
 
+    @Transient
+    private String otp;
+
     // Getters & Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -64,5 +67,7 @@ public class Student {
     public List<String> getSkills() { return skills; }
     public void setSkills(List<String> skills) { this.skills = skills; }
 
-    
+    public String getOtp() { return otp; }
+    public void setOtp(String otp) { this.otp = otp; }
+
 }

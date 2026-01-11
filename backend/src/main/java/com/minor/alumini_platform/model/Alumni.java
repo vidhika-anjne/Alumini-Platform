@@ -40,6 +40,9 @@ public class Alumni {
     @JsonManagedReference
     private List<Post> posts;
 
+    @Transient
+    private String otp;
+
     // Getters & Setters
     public Long getId() {
         return id;
@@ -119,6 +122,14 @@ public class Alumni {
 
     public void setPosts(List<Post> posts) {
         this.posts = posts;
+    }
+
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
     }
 
 }

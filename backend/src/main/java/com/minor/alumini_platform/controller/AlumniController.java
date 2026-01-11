@@ -3,6 +3,7 @@ package com.minor.alumini_platform.controller;
 import com.minor.alumini_platform.model.Alumni;
 import com.minor.alumini_platform.service.AlumniService;
 import com.minor.alumini_platform.security.JwtUtil;
+import com.minor.alumini_platform.otp.OtpStorage;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,10 +18,12 @@ public class AlumniController {
 
     private final AlumniService alumniService;
     private final JwtUtil jwtUtil;
+    private final OtpStorage otpStorage;
 
-    public AlumniController(AlumniService alumniService, JwtUtil jwtUtil) {
+    public AlumniController(AlumniService alumniService, JwtUtil jwtUtil, OtpStorage otpStorage) {
         this.alumniService = alumniService;
         this.jwtUtil = jwtUtil;
+        this.otpStorage = otpStorage;
     }
 
     // Alumni registration
@@ -50,6 +53,13 @@ public class AlumniController {
                 return ResponseEntity.badRequest().body(response);
             }
             
+            // Validate OTP
+            if (alumni.getOtp() == null || !otpStorage.validateOtp(alumni.getEmail(), alumni.getOtp())) {
+                response.put("success", false);
+                response.put("message", "Invalid or missing OTP");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
             // Check if alumni already exists
             if (alumniService.getAlumniByEnrollmentNumber(alumni.getEnrollmentNumber()) != null) {
                 response.put("success", false);
@@ -66,6 +76,7 @@ public class AlumniController {
             }
             
             Alumni savedAlumni = alumniService.registerAlumni(alumni);
+            otpStorage.clearOtp(alumni.getEmail()); // Clear OTP after success
             response.put("success", true);
             response.put("message", "Alumni registered successfully");
             response.put("alumni", savedAlumni);

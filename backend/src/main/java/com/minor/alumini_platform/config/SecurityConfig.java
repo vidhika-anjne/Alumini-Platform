@@ -32,20 +32,19 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .cors().and()
-        .csrf(csrf -> csrf.disable())
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(auth -> auth
-          .requestMatchers(new AntPathRequestMatcher("/**", "OPTIONS")).permitAll()
-          .requestMatchers(new AntPathRequestMatcher("/api/v1/alumni/register")).permitAll()
-          .requestMatchers(new AntPathRequestMatcher("/api/v1/alumni/login")).permitAll()
-          .requestMatchers(new AntPathRequestMatcher("/api/v1/students/register")).permitAll()
-          .requestMatchers(new AntPathRequestMatcher("/api/v1/students/login")).permitAll()
-          .requestMatchers(new AntPathRequestMatcher("/api/v1/posts", "GET")).permitAll()
-          .requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
-          .requestMatchers(new AntPathRequestMatcher("/api/public/**")).permitAll()
-          .requestMatchers(new AntPathRequestMatcher("/api/v1/**")).authenticated()
-          .anyRequest().permitAll()
-        )
+        .csrf().disable()
+        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        .and()
+        .authorizeRequests()
+          .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+          .antMatchers("/api/v1/alumni/register", "/api/v1/alumni/login").permitAll()
+          .antMatchers("/api/v1/students/register", "/api/v1/students/login").permitAll()
+          .antMatchers("/api/v1/auth/**").permitAll()
+          .antMatchers(HttpMethod.GET, "/api/v1/posts").permitAll()
+          .antMatchers("/api/auth/**", "/api/public/**").permitAll()
+          .antMatchers("/api/v1/**").authenticated()
+          .anyRequest().authenticated()
+        .and()
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
@@ -56,6 +55,3 @@ public class SecurityConfig {
     return new BCryptPasswordEncoder();
   }
 }
-
-
-
