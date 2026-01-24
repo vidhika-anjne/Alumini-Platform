@@ -6,6 +6,8 @@ export default function Profile() {
   const { userType, user, updateUser } = useAuth()
   const [profile, setProfile] = useState(user || null)
   const [msg, setMsg] = useState('')
+  const [avatarFile, setAvatarFile] = useState(null)
+  const [avatarUrlInput, setAvatarUrlInput] = useState('')
 
   useEffect(() => {
     setProfile(user || null)
@@ -48,12 +50,89 @@ export default function Profile() {
     }
   }
 
+  const avatarEndpoint = (en) => userType === 'alumni'
+    ? `/api/v1/alumni/${en}/avatar`
+    : `/api/v1/students/${en}/avatar`
+
+  const uploadAvatarFile = async () => {
+    setMsg('')
+    try {
+      if (!profile?.enrollmentNumber) return
+      if (!avatarFile) {
+        setMsg('Select a file first')
+        return
+      }
+      const form = new FormData()
+      form.append('file', avatarFile)
+      const { data } = await api.post(avatarEndpoint(profile.enrollmentNumber), form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      const serverObj = data?.alumni || data?.student || {}
+      const merged = { ...profile, ...serverObj }
+      setProfile(merged)
+      updateUser(merged)
+      setMsg('Profile image updated')
+      setAvatarFile(null)
+    } catch (err) {
+      setMsg(err?.response?.data?.message || 'Upload failed')
+    }
+  }
+
+  const setAvatarByUrl = async () => {
+    setMsg('')
+    try {
+      if (!profile?.enrollmentNumber) return
+      const url = (avatarUrlInput || '').trim()
+      if (!url) {
+        setMsg('Enter an image URL')
+        return
+      }
+      const { data } = await api.post(avatarEndpoint(profile.enrollmentNumber), null, {
+        params: { imageUrl: url },
+      })
+      const serverObj = data?.alumni || data?.student || {}
+      const merged = { ...profile, ...serverObj }
+      setProfile(merged)
+      updateUser(merged)
+      setMsg('Profile image updated')
+      setAvatarUrlInput('')
+    } catch (err) {
+      setMsg(err?.response?.data?.message || 'Update failed')
+    }
+  }
+
   if (!profile) return <p className="container">No profile</p>
 
   return (
     <div className="container" style={{ maxWidth: 700 }}>
       <h2>Profile ({userType})</h2>
       <div className="card">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
+          {profile.avatarUrl ? (
+            <img src={profile.avatarUrl} alt="Avatar" style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover' }} />
+          ) : (
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#ccc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>
+              {(profile.name || profile.enrollmentNumber || 'U').toString().trim().charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div style={{ flex: 1 }}>
+            <label className="label" style={{ marginBottom: 8 }}>
+              Upload image (file)
+              <input type="file" accept="image/*" onChange={(e) => setAvatarFile(e.target.files?.[0] || null)} />
+            </label>
+            <button className="button" onClick={uploadAvatarFile} disabled={!avatarFile}>Upload</button>
+          </div>
+        </div>
+        <label className="label">
+          Or set image by URL
+          <input
+            className="input"
+            placeholder="https://example.com/image.jpg"
+            value={avatarUrlInput}
+            onChange={(e) => setAvatarUrlInput(e.target.value)}
+          />
+        </label>
+        <button className="button" onClick={setAvatarByUrl} style={{ marginBottom: 12 }}>Set Image URL</button>
         <label className="label">
           Name
           <input className="input" value={profile.name || ''} onChange={(e) => setProfile({ ...profile, name: e.target.value })} />

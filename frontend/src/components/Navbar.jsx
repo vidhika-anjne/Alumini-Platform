@@ -1,12 +1,13 @@
-import { NavLink, Link, useNavigate } from 'react-router-dom'
+import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function Navbar() {
   const { token, userType, user, logout } = useAuth()
   const { theme, toggle } = useTheme()
   const nav = useNavigate()
+  const location = useLocation()
   const [open, setOpen] = useState(false)
 
   const handleLogout = () => {
@@ -19,6 +20,11 @@ export default function Navbar() {
     .trim()
     .charAt(0)
     .toUpperCase()
+
+  // Close the mobile menu on any route change (e.g., when a nav option is clicked)
+  useEffect(() => {
+    setOpen(false)
+  }, [location.pathname])
 
   return (
     <header className="header">
@@ -40,7 +46,11 @@ export default function Navbar() {
         <button className="icon-btn" onClick={toggle} title="Toggle theme">{theme === 'light' ? '🌙' : '☀️'}</button>
         {token && (
           <div className="user">
-            <div className="avatar" aria-label="User avatar">{avatar}</div>
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt="Avatar" className="avatar" style={{ objectFit: 'cover' }} />
+            ) : (
+              <div className="avatar" aria-label="User avatar">{avatar}</div>
+            )}
             <div className="user-info">
               <div className="user-name">{user?.name || user?.enrollmentNumber}</div>
               <div className="user-role small">{userType}</div>
