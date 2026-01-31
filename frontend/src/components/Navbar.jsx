@@ -2,6 +2,7 @@ import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { useState, useEffect } from 'react'
+import logo from '../images/White-Logos-for-Acropolis.png'
 
 export default function Navbar() {
   const { token, userType, user, logout } = useAuth()
@@ -29,7 +30,13 @@ export default function Navbar() {
   return (
     <header className="header">
       <div className="brand">
-        <Link to="/dashboard" className="logo">🎓 Alumni Platform</Link>
+        <Link to="/dashboard" className="logo">
+          <img
+            src={logo}
+            alt="Company Logo"
+            style={{ width: "150px", height: "auto", cursor: "pointer" }}
+          />
+          </Link>
         <button className="nav-toggle" onClick={() => setOpen((o) => !o)} aria-label="Toggle navigation">☰</button>
       </div>
       <nav className={`nav ${open ? 'open' : ''}`}>

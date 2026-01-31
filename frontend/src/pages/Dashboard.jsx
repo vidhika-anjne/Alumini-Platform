@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../api/client'
 import { useAuth } from '../context/AuthContext'
+import banner from '../images/aitrbanner.jpg'
 
 export default function Dashboard() {
   const { token, user } = useAuth()
@@ -37,9 +38,15 @@ export default function Dashboard() {
     load()
   }, [currentId, token])
 
-  return (
+  return (<>
+    <section className="hero">
+      <img src={banner} alt="" className="hero-bg" aria-hidden="true" />
+      <div className="hero-overlay" />
+      <div className="hero-content">
+        <h1 className="hero-quote">Reconnect with alumni, find mentors, and grow together.</h1>
+      </div>
+    </section>
     <div className="container">
-      <h2>Dashboard</h2>
       <div className="grid">
         <div className="stat-card">
           <div className="stat-value">{stats.posts}</div>
@@ -70,5 +77,6 @@ export default function Dashboard() {
       </div>
       {loading && <p className="small">Refreshing stats…</p>}
     </div>
+  </>
   )
 }

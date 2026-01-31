@@ -87,9 +87,10 @@ export default function Profile() {
         setMsg('Enter an image URL')
         return
       }
-      const { data } = await api.post(avatarEndpoint(profile.enrollmentNumber), null, {
-        params: { imageUrl: url },
-      })
+      const { data } = await api.post(
+        avatarEndpoint(profile.enrollmentNumber),
+        { imageUrl: url }
+      )
       const serverObj = data?.alumni || data?.student || {}
       const merged = { ...profile, ...serverObj }
       setProfile(merged)
@@ -112,7 +113,7 @@ export default function Profile() {
             <img src={profile.avatarUrl} alt="Avatar" style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover' }} />
           ) : (
             <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#ccc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>
-              {(profile.name || profile.enrollmentNumber || 'U').toString().trim().charAt(0).toUpperCase()}
+              {((profile.name || profile.enrollmentNumber || 'U') + '').trim().charAt(0).toUpperCase() || 'U'}
             </div>
           )}
           <div style={{ flex: 1 }}>

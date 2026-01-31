@@ -63,7 +63,7 @@ export default function Register() {
   const onVerifyOtp = async () => {
     setOtpMessage('')
     setError('')
-    if (!otp || otp.trim().length < 4) {
+    if (!otp || otp.trim().length !== 6) {
       setError('Enter the OTP received in email.')
       return
     }
@@ -117,7 +117,17 @@ export default function Register() {
           <label className="label">
             Enter OTP
             <div style={{ display: 'flex', gap: 8 }}>
-              <input className="input" style={{ flex: 1 }} value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="6-digit OTP" />
+              <input
+                className="input"
+                style={{ flex: 1 }}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]{6}"
+                maxLength={6}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                placeholder="6-digit OTP"
+              />
               <button type="button" className="button" onClick={onVerifyOtp} disabled={verifying}>
                 {verifying ? 'Verifying…' : 'Verify OTP'}
               </button>
