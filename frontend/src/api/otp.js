@@ -1,11 +1,13 @@
 import api from './client'
 
 export async function sendOtp(email) {
-  const res = await api.post('/api/v1/otp/send', { email })
+  // Backend endpoint for sending OTP
+  const res = await api.post('/api/v1/auth/send-otp', { email })
   return res.data
 }
 
 export async function verifyOtp(email, otp) {
-  const res = await api.post('/api/v1/otp/verify', { email, otp })
+  // Backend endpoint for verifying OTP (checks validity against storage)
+  const res = await api.post('/api/v1/auth/verify-otp', { email, otp })
   return res.data
 }

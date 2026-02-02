@@ -30,8 +30,8 @@ export default function Register() {
     }
     try {
       const payload = role === 'alumni'
-        ? { enrollmentNumber, name, email, password, passingYear, department }
-        : { enrollmentNumber, name, email, password, passingYear: Number(passingYear) || 2024 }
+        ? { enrollmentNumber, name, email, password, passingYear, department, otp: otp.trim() }
+        : { enrollmentNumber, name, email, password, passingYear: Number(passingYear) || 2024, otp: otp.trim() }
       const res = await register(role, payload)
       if (res.success) nav('/login')
       else setError(res.message || 'Registration failed')
