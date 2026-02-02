@@ -2,9 +2,11 @@ package com.minor.alumini_platform.model;
 
 import javax.persistence.*;
 
+import java.time.LocalDate;
 import java.util.List;
 // import com.minor.alumini_platform.enums.EmploymentStatus;
 import com.minor.alumini_platform.enums.Status;
+import com.minor.alumini_platform.enums.AlumniDecisionStatus;
 
 @Entity
 @Table(name = "students")
@@ -32,9 +34,22 @@ public class Student {
     private String email;
     private Integer passingYear;
     private String bio;
+    private String department;
 
     @ElementCollection
     private List<String> skills;
+
+    @Transient
+    private String otp;
+
+    private LocalDate expectedEndDate;
+
+    @Enumerated(EnumType.STRING)
+    private AlumniDecisionStatus alumniDecisionStatus = AlumniDecisionStatus.PENDING;
+
+    private LocalDate nextPromptDate;
+
+    private LocalDate actualAlumniDate;
 
     // Getters & Setters
     public Long getId() { return id; }
@@ -61,8 +76,44 @@ public class Student {
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = bio; }
 
+    public String getDepartment() { return department; }
+    public void setDepartment(String department) { this.department = department; }
+
     public List<String> getSkills() { return skills; }
     public void setSkills(List<String> skills) { this.skills = skills; }
 
-    
+    public String getOtp() { return otp; }
+    public void setOtp(String otp) { this.otp = otp; }
+
+    public LocalDate getExpectedEndDate() { return expectedEndDate; }
+    public void setExpectedEndDate(LocalDate expectedEndDate) { this.expectedEndDate = expectedEndDate; }
+
+    public AlumniDecisionStatus getAlumniDecisionStatus() { return alumniDecisionStatus; }
+    public void setAlumniDecisionStatus(AlumniDecisionStatus alumniDecisionStatus) { this.alumniDecisionStatus = alumniDecisionStatus; }
+
+    public LocalDate getNextPromptDate() { return nextPromptDate; }
+    public void setNextPromptDate(LocalDate nextPromptDate) { this.nextPromptDate = nextPromptDate; }
+
+    public LocalDate getActualAlumniDate() { return actualAlumniDate; }
+    public void setActualAlumniDate(LocalDate actualAlumniDate) { this.actualAlumniDate = actualAlumniDate; }
+
+    public boolean needsAlumniPrompt(LocalDate today) {
+        if (alumniDecisionStatus == AlumniDecisionStatus.CONFIRMED_ALUMNI) {
+            return false;
+        }
+        if (expectedEndDate == null) {
+            return false;
+        }
+        if (today.isBefore(expectedEndDate)) {
+            return false;
+        }
+        if (alumniDecisionStatus == AlumniDecisionStatus.PENDING) {
+            return true;
+        }
+        if (alumniDecisionStatus == AlumniDecisionStatus.DELAYED) {
+            return nextPromptDate == null || today.isAfter(nextPromptDate) || today.isEqual(nextPromptDate);
+        }
+        return false;
+    }
+
 }

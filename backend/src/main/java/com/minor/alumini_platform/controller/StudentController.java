@@ -1,26 +1,34 @@
 package com.minor.alumini_platform.controller;
 
+import com.minor.alumini_platform.dto.StudentStatusCheckResult;
+import com.minor.alumini_platform.enums.AlumniDecisionStatus;
+import com.minor.alumini_platform.model.Alumni;
 import com.minor.alumini_platform.model.Student;
 import com.minor.alumini_platform.service.StudentService;
 import com.minor.alumini_platform.security.JwtUtil;
+import com.minor.alumini_platform.otp.OtpStorage;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("api/v1/students")
+@RequestMapping({"/api/v1/students", "/api/v1/student"})
 @CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
 public class StudentController {
 
     private final StudentService studentService;
     private final JwtUtil jwtUtil;
+    private final OtpStorage otpStorage;
 
-    public StudentController(StudentService studentService, JwtUtil jwtUtil) {
+    public StudentController(StudentService studentService, JwtUtil jwtUtil, OtpStorage otpStorage) {
         this.studentService = studentService;
         this.jwtUtil = jwtUtil;
+        this.otpStorage = otpStorage;
     }
 
     // Student registration
@@ -50,6 +58,13 @@ public class StudentController {
                 return ResponseEntity.badRequest().body(response);
             }
             
+            // Validate OTP
+            if (student.getOtp() == null || !otpStorage.validateOtp(student.getEmail(), student.getOtp())) {
+                response.put("success", false);
+                response.put("message", "Invalid or missing OTP");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
             // Check if student already exists
             if (studentService.getStudentByEnrollmentNumber(student.getEnrollmentNumber()) != null) {
                 response.put("success", false);
@@ -63,6 +78,7 @@ public class StudentController {
             }
             
             Student savedStudent = studentService.registerStudent(student);
+            otpStorage.clearOtp(student.getEmail()); // Clear OTP after success
             response.put("success", true);
             response.put("message", "Student registered successfully");
             response.put("student", savedStudent);
@@ -168,6 +184,7 @@ public class StudentController {
     public ResponseEntity<Map<String, Object>> updateStudent(@PathVariable String enrollmentNumber, @RequestBody Student student) {
         Map<String, Object> response = new HashMap<>();
         try {
+            studentService.validateStudentAccess(enrollmentNumber);
             Student existingStudent = studentService.getStudentByEnrollmentNumber(enrollmentNumber);
             if (existingStudent == null) {
                 response.put("success", false);
@@ -190,6 +207,128 @@ public class StudentController {
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "Update failed: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    // GET /api/v1/student/status
+    @GetMapping("/status")
+    public ResponseEntity<Map<String, Object>> getStudentStatus(Principal principal) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            if (principal == null) {
+                response.put("success", false);
+                response.put("message", "Authentication required");
+                return ResponseEntity.status(401).body(response);
+            }
+            Student student = studentService.getStudentByEnrollmentNumber(principal.getName());
+            if (student == null) {
+                response.put("success", false);
+                response.put("message", "Student not found");
+                return ResponseEntity.status(404).body(response);
+            }
+            StudentStatusCheckResult result = studentService.checkStudentStatus(student, LocalDate.now());
+            response.put("success", true);
+            response.put("isPastExpectedEndDate", result.isPastExpectedEndDate());
+            response.put("shouldPromptForAlumni", result.isShouldPromptForAlumni());
+            response.put("expectedEndDate", result.getExpectedEndDate());
+            response.put("nextPromptDate", result.getNextPromptDate());
+            response.put("alumniDecisionStatus", result.getAlumniDecisionStatus());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error checking status: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    // POST /api/v1/student/confirm-alumni
+    @PostMapping("/confirm-alumni")
+    public ResponseEntity<Map<String, Object>> confirmAlumni(Principal principal, @RequestBody(required = false) Map<String, String> body) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            if (principal == null) {
+                response.put("success", false);
+                response.put("message", "Authentication required");
+                return ResponseEntity.status(401).body(response);
+            }
+            Student student = studentService.getStudentByEnrollmentNumber(principal.getName());
+            if (student == null) {
+                response.put("success", false);
+                response.put("message", "Student not found");
+                return ResponseEntity.status(404).body(response);
+            }
+
+            StudentStatusCheckResult status = studentService.checkStudentStatus(student, LocalDate.now());
+            if (!status.isShouldPromptForAlumni()) {
+                response.put("success", false);
+                response.put("message", "Confirmation not required at this time.");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            LocalDate effectiveDate = LocalDate.now();
+            if (body != null && body.containsKey("effectiveDate")) {
+                effectiveDate = LocalDate.parse(body.get("effectiveDate"));
+            }
+
+            Alumni alumni = studentService.convertToAlumni(student, effectiveDate);
+            String token = jwtUtil.generateToken(alumni.getEnrollmentNumber(), "ALUMNI");
+
+            response.put("success", true);
+            response.put("message", "You are now registered as alumni.");
+            response.put("token", token);
+            response.put("alumni", alumni);
+            response.put("userType", "alumni");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Conversion failed: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    // POST /api/v1/student/delay-alumni
+    @PostMapping("/delay-alumni")
+    public ResponseEntity<Map<String, Object>> delayAlumni(Principal principal, @RequestBody Map<String, String> body) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            if (principal == null) {
+                response.put("success", false);
+                response.put("message", "Authentication required");
+                return ResponseEntity.status(401).body(response);
+            }
+            Student student = studentService.getStudentByEnrollmentNumber(principal.getName());
+            if (student == null) {
+                response.put("success", false);
+                response.put("message", "Student not found");
+                return ResponseEntity.status(404).body(response);
+            }
+
+            StudentStatusCheckResult statusCheck = studentService.checkStudentStatus(student, LocalDate.now());
+            if (!statusCheck.isPastExpectedEndDate()) {
+                response.put("success", false);
+                response.put("message", "Delay option is only available after expected end date.");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            if (!body.containsKey("nextPromptDate")) {
+                response.put("success", false);
+                response.put("message", "nextPromptDate is required");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            LocalDate nextPromptDate = LocalDate.parse(body.get("nextPromptDate"));
+            student.setAlumniDecisionStatus(AlumniDecisionStatus.DELAYED);
+            student.setNextPromptDate(nextPromptDate);
+            studentService.updateStudent(student);
+
+            response.put("success", true);
+            response.put("message", "We will ask you about alumni status again on " + nextPromptDate);
+            response.put("nextPromptDate", nextPromptDate);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Action failed: " + e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
     }
