@@ -6,6 +6,7 @@ import com.minor.alumini_platform.model.Student;
 import com.minor.alumini_platform.repository.AlumniRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -92,6 +93,14 @@ public class AlumniService {
         alumni.getExperiences().add(experience);
 
         return alumniRepository.save(alumni);
+    }
+
+    @Transactional
+    public void deleteAlumniAccount(String enrollmentNumber) {
+        Alumni alumni = alumniRepository.findByEnrollmentNumber(enrollmentNumber)
+                .orElseThrow(() -> new RuntimeException("Alumni not found"));
+        // CascadeType.ALL on experiences and posts will handle those
+        alumniRepository.delete(alumni);
     }
 
     

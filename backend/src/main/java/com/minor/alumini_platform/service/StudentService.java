@@ -99,6 +99,13 @@ public class StudentService {
     }
 
     @Transactional
+    public void deleteStudentAccount(String enrollmentNumber) {
+        Student student = studentRepository.findByEnrollmentNumber(enrollmentNumber)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+        studentRepository.delete(student);
+    }
+
+    @Transactional
     public Alumni convertToAlumni(Student student, LocalDate effectiveDate) {
         // 1. Create new Alumni entity
         Alumni alumni = new Alumni();
