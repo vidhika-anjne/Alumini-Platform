@@ -22,9 +22,9 @@ export default function Login() {
   }
 
   return (
-    <div className="container" style={{ maxWidth: 480 }}>
-      <h2>Login</h2>
-      <form onSubmit={onSubmit} className="card">
+    <div className="container bg-dashboard" style={{ maxWidth: 480, padding: 16, borderRadius: 12 }}>
+      <h2 style={{ color: '#fff' }}>Login</h2>
+      <form onSubmit={onSubmit} className="card card-soft">
         <label className="label">
           Role
           <select className="select" value={role} onChange={(e) => setRole(e.target.value)}>
@@ -41,7 +41,7 @@ export default function Login() {
           <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </label>
         {error && <p style={{ color: 'tomato' }}>{error}</p>}
-        <button className="button primary" style={{ marginTop: 12 }} type="submit">Login</button>
+        <button className="button cta" style={{ marginTop: 12 }} type="submit">Login</button>
       </form>
     </div>
   )

@@ -16,12 +16,12 @@ export default function Feed() {
   useEffect(() => { load() }, [])
 
   return (
-    <div className="container" style={{ maxWidth: 800 }}>
+    <div className="container bg-neutral-section" style={{ maxWidth: 800, padding: 16, borderRadius: 12 }}>
       <h2>Feed</h2>
       {userType === 'alumni' && <PostForm onCreated={() => load()} />}
       <div className="grid">
         {Array.isArray(posts) && posts.map((p) => (
-          <article key={p.id} className="card">
+          <article key={p.id} className="card card-soft">
             <p>{p.content}</p>
             {p.mediaUrl && (
               p.mediaUrl.match(/\.mp4|\.webm$/i) ? (

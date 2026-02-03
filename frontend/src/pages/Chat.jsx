@@ -130,8 +130,8 @@ export default function Chat() {
   }
 
   return (
-    <div className="container" style={{ display: 'flex', gap: 16, minHeight: '70vh' }}>
-      <aside className="card" style={{ width: 280 }}>
+    <div className="container bg-neutral-section" style={{ display: 'flex', gap: 16, minHeight: '70vh', padding: 12, borderRadius: 12 }}>
+      <aside className="card card-soft" style={{ width: 280 }}>
         <h3>Conversations</h3>
         <div style={{ display: 'flex', gap: 8 }}>
           <input
@@ -140,7 +140,7 @@ export default function Chat() {
             value={recipientId}
             onChange={(e) => setRecipientId(e.target.value)}
           />
-          <button className="button" onClick={createPrivateConversation}>Start</button>
+          <button className="button cta" onClick={createPrivateConversation}>Start</button>
         </div>
         <ul style={{ listStyle: 'none', padding: 0, marginTop: 12 }}>
           {conversations.map((c) => (
@@ -158,12 +158,12 @@ export default function Chat() {
         </ul>
       </aside>
 
-      <main className="card" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <main className="card card-soft" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <h3>{selectedConv ? `Conversation #${selectedConv.id}` : 'Select a conversation'}</h3>
         <div style={{ flex: 1, overflowY: 'auto', paddingRight: 6 }}>
           {messages.map((m) => (
             <div key={m.id} style={{ marginBottom: 10, display: 'flex', justifyContent: m.senderId === String(currentId) ? 'flex-end' : 'flex-start' }}>
-              <div className="card" style={{ maxWidth: '70%' }}>
+              <div className={m.senderId === String(currentId) ? 'card card-dark' : 'card card-soft'} style={{ maxWidth: '70%' }}>
                 <div className="small" style={{ opacity: 0.7 }}>{m.senderId}</div>
                 <div>{m.content}</div>
                 <div className="small" style={{ opacity: 0.5 }}>{m.status}</div>
@@ -185,7 +185,7 @@ export default function Chat() {
             placeholder={selectedConv ? 'Type a message…' : 'Select a conversation'}
             disabled={!selectedConv}
           />
-          <button className="button primary" onClick={sendMessage} disabled={!selectedConv || !input.trim()}>Send</button>
+          <button className="button cta" onClick={sendMessage} disabled={!selectedConv || !input.trim()}>Send</button>
         </div>
       </main>
     </div>

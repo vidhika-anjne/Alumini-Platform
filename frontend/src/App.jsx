@@ -8,54 +8,58 @@ import Mentors from './pages/Mentors'
 import Stories from './pages/Stories'
 import Dashboard from './pages/Dashboard'
 import Navbar from './components/Navbar'
+import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
 
 export default function App() {
   return (
-    <div style={{ fontFamily: 'Inter, system-ui, Arial' }}>
+    <div className="app">
       <Navbar />
       <ErrorBoundary>
-      <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/feed" element={<Feed />} />
-        <Route
-          path="/mentors"
-          element={
-            <ProtectedRoute>
-              <Mentors />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/stories" element={<Stories />} />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/chat"
-          element={
-            <ProtectedRoute>
-              <Chat />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+        <main className="content">
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/feed" element={<Feed />} />
+            <Route
+              path="/mentors"
+              element={
+                <ProtectedRoute>
+                  <Mentors />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/stories" element={<Stories />} />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chat"
+              element={
+                <ProtectedRoute>
+                  <Chat />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </main>
       </ErrorBoundary>
+      <Footer />
     </div>
   )
 }

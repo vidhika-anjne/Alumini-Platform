@@ -86,9 +86,9 @@ export default function Register() {
   }
 
   return (
-    <div className="container" style={{ maxWidth: 560 }}>
-      <h2>Register</h2>
-      <form onSubmit={onSubmit} className="card">
+    <div className="container bg-dashboard" style={{ maxWidth: 560, padding: 16, borderRadius: 12 }}>
+      <h2 style={{ color: '#fff' }}>Register</h2>
+      <form onSubmit={onSubmit} className="card card-soft">
         <label className="label">
           Role
           <select className="select" value={role} onChange={(e) => setRole(e.target.value)}>
@@ -108,7 +108,7 @@ export default function Register() {
           Email
           <div style={{ display: 'flex', gap: 8 }}>
             <input className="input" style={{ flex: 1 }} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            <button type="button" className="button" onClick={onSendOtp} disabled={sending}>
+            <button type="button" className="button cta" onClick={onSendOtp} disabled={sending}>
               {sending ? 'Sending…' : (otpSent ? 'Resend OTP' : 'Send OTP')}
             </button>
           </div>
@@ -128,7 +128,7 @@ export default function Register() {
                 onChange={(e) => setOtp(e.target.value)}
                 placeholder="6-digit OTP"
               />
-              <button type="button" className="button" onClick={onVerifyOtp} disabled={verifying}>
+              <button type="button" className="button cta" onClick={onVerifyOtp} disabled={verifying}>
                 {verifying ? 'Verifying…' : 'Verify OTP'}
               </button>
             </div>
@@ -150,7 +150,7 @@ export default function Register() {
           </label>
         )}
         {error && <p style={{ color: 'tomato' }}>{error}</p>}
-        <button className="button primary" style={{ marginTop: 12 }} type="submit">Register</button>
+        <button className="button cta" style={{ marginTop: 12 }} type="submit">Register</button>
       </form>
     </div>
   )
