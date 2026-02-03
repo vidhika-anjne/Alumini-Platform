@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/otp")
+@RequestMapping("/api/v1/auth")
 @CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
 public class OtpController {
 
@@ -29,7 +29,7 @@ public class OtpController {
         this.studentRepository = studentRepository;
     }
 
-    @PostMapping("/send")
+    @PostMapping("/send-otp")
     public ResponseEntity<Map<String, Object>> sendOtp(@RequestBody Map<String, String> request) {
         String email = request.get("email");
         Map<String, Object> response = new HashMap<>();
@@ -56,7 +56,7 @@ public class OtpController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/verify")
+    @PostMapping("/verify-otp")
     public ResponseEntity<Map<String, Object>> verifyOtp(@RequestBody Map<String, String> request) {
         String email = request.get("email");
         String otp = request.get("otp");
@@ -69,7 +69,6 @@ public class OtpController {
         }
 
         if (otpStorage.validateOtp(email, otp)) {
-            otpStorage.clearOtp(email);
             response.put("success", true);
             response.put("message", "OTP verified successfully");
             return ResponseEntity.ok(response);

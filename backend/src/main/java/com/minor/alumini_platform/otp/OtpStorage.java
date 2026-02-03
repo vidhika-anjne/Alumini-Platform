@@ -20,24 +20,29 @@ public class OtpStorage {
     }
 
     public void saveOtp(String email, String otp) {
+        if (email == null) return;
+        String key = email.trim().toLowerCase();
         long expiryTime = System.currentTimeMillis() + (5 * 60 * 1000); // 5 minutes
-        otpMap.put(email, new OtpData(otp, expiryTime));
+        otpMap.put(key, new OtpData(otp, expiryTime));
     }
 
     public boolean validateOtp(String email, String otp) {
-        OtpData data = otpMap.get(email);
+        if (email == null || otp == null) return false;
+        String key = email.trim().toLowerCase();
+        OtpData data = otpMap.get(key);
         if (data == null) return false;
         
         if (System.currentTimeMillis() > data.expiryTime) {
-            otpMap.remove(email);
+            otpMap.remove(key);
             return false;
         }
         
-        return otp.equals(data.otp);
+        return otp.trim().equals(data.otp);
     }
 
     public void clearOtp(String email) {
-        otpMap.remove(email);
+        if (email == null) return;
+        otpMap.remove(email.trim().toLowerCase());
     }
 }
 
