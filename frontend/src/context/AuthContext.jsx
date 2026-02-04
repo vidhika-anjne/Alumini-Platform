@@ -58,7 +58,14 @@ export function AuthProvider({ children }) {
     })
   }
 
-  const value = { token, userType, user, login, register, logout, updateUser }
+  // Switch account context (used when student converts to alumni)
+  const switchAccount = (nextUserType, nextToken, nextUser) => {
+    setUserType(nextUserType || '')
+    setToken(nextToken || '')
+    setUser(nextUser || null)
+  }
+
+  const value = { token, userType, user, login, register, logout, updateUser, switchAccount }
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 

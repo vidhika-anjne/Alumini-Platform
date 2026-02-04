@@ -295,6 +295,20 @@ nav a {
   object-fit: cover;
 }
 
+/* Alumni status banner */
+.banner {
+  width: 100%;
+  border-bottom: 1px solid var(--border);
+}
+.banner-inner {
+  padding: 10px 0;
+}
+.banner-text { font-size: 16px; }
+.banner-info { background: rgba(var(--black-rgb), 0.02); }
+.banner-success { background: rgba(16, 185, 129, 0.12); }
+.banner-warn { background: rgba(234, 179, 8, 0.12); }
+.banner-highlight { background: rgba(37, 99, 235, 0.14); }
+
 /* Responsive */
 @media (max-width: 768px) {
   .grid {

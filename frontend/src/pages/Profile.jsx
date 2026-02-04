@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/client'
+import AlumniStatusBanner from '../components/AlumniStatusBanner'
 
 export default function Profile() {
   const { userType, user, updateUser } = useAuth()
@@ -105,7 +106,10 @@ export default function Profile() {
   if (!profile) return <p className="container">No profile</p>
 
   return (
-    <div className="container" style={{ maxWidth: 700 }}>
+    <div>
+      {/* Show alumni conversion status for students */}
+      <AlumniStatusBanner />
+      <div className="container" style={{ maxWidth: 700 }}>
       <h2>Profile ({userType})</h2>
       <div className="card">
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
@@ -179,6 +183,7 @@ export default function Profile() {
         )}
         <button className="button primary" style={{ marginTop: 12 }} onClick={save}>Save</button>
         {msg && <p className="small">{msg}</p>}
+      </div>
       </div>
     </div>
   )

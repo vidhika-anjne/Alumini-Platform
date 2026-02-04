@@ -6,6 +6,7 @@ import banner from '../images/untitled design.png'
 import storiesIcon from '../images/stories.svg'
 import mentorsIcon from '../images/mentors.svg'
 import chatIcon from '../images/chat.svg'
+import AlumniStatusBanner from '../components/AlumniStatusBanner'
 
 export default function Dashboard() {
   const { token, user } = useAuth()
@@ -42,6 +43,7 @@ export default function Dashboard() {
   }, [currentId, token])
 
   return (<>
+    <AlumniStatusBanner />
     <section className="hero">
       <div className="container hero-inner">
         <div className="hero-content">
