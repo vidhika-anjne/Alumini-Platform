@@ -332,4 +332,20 @@ public class StudentController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+    // Delete student account
+    @DeleteMapping("/{enrollmentNumber}")
+    public ResponseEntity<Map<String, Object>> deleteAccount(@PathVariable String enrollmentNumber) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            studentService.deleteStudentAccount(enrollmentNumber);
+            response.put("success", true);
+            response.put("message", "Account deleted successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Deletion failed: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
 }
