@@ -30,7 +30,7 @@ public class Student {
     // public enum Status {
     //     PENDING, APPROVED, REJECTED
     // }
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
     private Integer passingYear;
     private String bio;
@@ -42,6 +42,7 @@ public class Student {
     @Transient
     private String otp;
 
+    @Column(nullable = false)
     private LocalDate expectedEndDate;
 
     @Enumerated(EnumType.STRING)

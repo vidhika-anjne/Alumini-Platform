@@ -57,6 +57,11 @@ public class StudentController {
                 response.put("message", "Password is required");
                 return ResponseEntity.badRequest().body(response);
             }
+            if (student.getExpectedEndDate() == null) {
+                response.put("success", false);
+                response.put("message", "Expected graduation date is required");
+                return ResponseEntity.badRequest().body(response);
+            }
             
             // Validate OTP
             if (student.getOtp() == null || !otpStorage.validateOtp(student.getEmail(), student.getOtp())) {
