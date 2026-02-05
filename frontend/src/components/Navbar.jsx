@@ -58,7 +58,7 @@ export default function Navbar() {
             ) : (
               <div className="avatar" aria-label="User avatar">{avatar}</div>
             )}
-            <div className="user-info">
+            <div className="user-info" Link to="/profile">
               <div className="user-name">{user?.name || user?.enrollmentNumber}</div>
               <div className="user-role small">{userType}</div>
             </div>
