@@ -4,6 +4,7 @@ import com.minor.alumini_platform.chat.dto.MessageResponse;
 import com.minor.alumini_platform.chat.dto.SendMessageRequest;
 import com.minor.alumini_platform.chat.model.*;
 import com.minor.alumini_platform.chat.repository.*;
+import com.minor.alumini_platform.service.ConnectionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,13 +19,16 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final ConversationRepository conversationRepository;
     private final ConversationParticipantRepository participantRepository;
+    private final ConnectionService connectionService;
 
     public MessageService(MessageRepository messageRepository,
                           ConversationRepository conversationRepository,
-                          ConversationParticipantRepository participantRepository) {
+                          ConversationParticipantRepository participantRepository,
+                          ConnectionService connectionService) {
         this.messageRepository = messageRepository;
         this.conversationRepository = conversationRepository;
         this.participantRepository = participantRepository;
+        this.connectionService = connectionService;
     }
 
     public Message sendMessage(SendMessageRequest req) {
@@ -42,6 +46,19 @@ public class MessageService {
         boolean isParticipant = participantRepository.existsByConversationIdAndParticipantId(req.conversationId, req.senderId);
         if (!isParticipant) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Sender is not a participant of the conversation");
+        }
+
+        // Block messages if not connected (for PRIVATE conversations)
+        if (conv.getType() == ConversationType.PRIVATE) {
+            String otherParticipantId = conv.getParticipants().stream()
+                    .filter(p -> !p.getParticipantId().equals(req.senderId))
+                    .map(p -> p.getParticipantId())
+                    .findFirst()
+                    .orElse(null);
+
+            if (otherParticipantId != null && !connectionService.areConnected(req.senderId, otherParticipantId)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You must be connected to send private messages");
+            }
         }
 
         Message m = new Message();
