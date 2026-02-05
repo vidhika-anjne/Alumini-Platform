@@ -1,0 +1,183 @@
+[
+  {
+    "enrollmentNumber": "AL-2019-001",
+    "name": "Rohit Mehta",
+    "email": "rohit.mehta@example.com",
+    "password": "password123",
+    "passingYear": "2019",
+    "department": "Computer Science",
+    "employmentStatus": "EMPLOYED"
+  },
+  {
+    "enrollmentNumber": "AL-2020-002",
+    "name": "Neha Gupta",
+    "email": "neha.gupta@example.com",
+    "password": "password123",
+    "passingYear": "2020",
+    "department": "Information Technology",
+    "employmentStatus": "EMPLOYED"
+  },
+  {
+    "enrollmentNumber": "AL-2020-003",
+    "name": "Amit Patel",
+    "email": "amit.patel@example.com",
+    "password": "password123",
+    "passingYear": "2020",
+    "department": "Electrical Engineering",
+    "employmentStatus": "EMPLOYED"
+  },
+  {
+    "enrollmentNumber": "AL-2021-004",
+    "name": "Sneha Joshi",
+    "email": "sneha.joshi@example.com",
+    "password": "password123",
+    "passingYear": "2021",
+    "department": "Civil Engineering",
+    "employmentStatus": "SEEKING_OPPORTUNITIES"
+  },
+  {
+    "enrollmentNumber": "AL-2021-005",
+    "name": "Rahul Khanna",
+    "email": "rahul.khanna@example.com",
+    "password": "password123",
+    "passingYear": "2021",
+    "department": "Mechanical Engineering",
+    "employmentStatus": "EMPLOYED"
+  },
+  {
+    "enrollmentNumber": "AL-2022-006",
+    "name": "Pooja Malhotra",
+    "email": "pooja.malhotra@example.com",
+    "password": "password123",
+    "passingYear": "2022",
+    "department": "Computer Science",
+    "employmentStatus": "SEEKING_OPPORTUNITIES"
+  },
+  {
+    "enrollmentNumber": "AL-2018-007",
+    "name": "Kunal Singh",
+    "email": "kunal.singh@example.com",
+    "password": "password123",
+    "passingYear": "2018",
+    "department": "Electronics Engineering",
+    "employmentStatus": "EMPLOYED"
+  },
+  {
+    "enrollmentNumber": "AL-2019-008",
+    "name": "Anjali Rao",
+    "email": "anjali.rao@example.com",
+    "password": "password123",
+    "passingYear": "2019",
+    "department": "Information Technology",
+    "employmentStatus": "EMPLOYED"
+  },
+  {
+    "enrollmentNumber": "AL-2020-009",
+    "name": "Vikas Yadav",
+    "email": "vikas.yadav@example.com",
+    "password": "password123",
+    "passingYear": "2020",
+    "department": "Mechanical Engineering",
+    "employmentStatus": "SEEKING_OPPORTUNITIES"
+  },
+  {
+    "enrollmentNumber": "AL-2022-010",
+    "name": "Isha Kapoor",
+    "email": "isha.kapoor@example.com",
+    "password": "password123",
+    "passingYear": "2022",
+    "department": "Computer Science",
+    "employmentStatus": "EMPLOYED"
+  },
+  {
+    "enrollmentNumber": "AL-2018-011",
+    "name": "Siddharth Jain",
+    "email": "siddharth.jain@example.com",
+    "password": "password123",
+    "passingYear": "2018",
+    "department": "Civil Engineering",
+    "employmentStatus": "EMPLOYED"
+  },
+  {
+    "enrollmentNumber": "AL-2019-012",
+    "name": "Riya Bansal",
+    "email": "riya.bansal@example.com",
+    "password": "password123",
+    "passingYear": "2019",
+    "department": "Electronics Engineering",
+    "employmentStatus": "SEEKING_OPPORTUNITIES"
+  },
+  {
+    "enrollmentNumber": "AL-2021-013",
+    "name": "Manish Verma",
+    "email": "manish.verma@example.com",
+    "password": "password123",
+    "passingYear": "2021",
+    "department": "Electrical Engineering",
+    "employmentStatus": "EMPLOYED"
+  },
+  {
+    "enrollmentNumber": "AL-2022-014",
+    "name": "Kriti Agarwal",
+    "email": "kriti.agarwal@example.com",
+    "password": "password123",
+    "passingYear": "2022",
+    "department": "Information Technology",
+    "employmentStatus": "EMPLOYED"
+  },
+  {
+    "enrollmentNumber": "AL-2017-015",
+    "name": "Nikhil Choudhary",
+    "email": "nikhil.choudhary@example.com",
+    "password": "password123",
+    "passingYear": "2017",
+    "department": "Mechanical Engineering",
+    "employmentStatus": "EMPLOYED"
+  },
+  {
+    "enrollmentNumber": "AL-2018-016",
+    "name": "Simran Kaur",
+    "email": "simran.kaur@example.com",
+    "password": "password123",
+    "passingYear": "2018",
+    "department": "Computer Science",
+    "employmentStatus": "SEEKING_OPPORTUNITIES"
+
+  },
+  {
+    "enrollmentNumber": "AL-2020-017",
+    "name": "Aditya Kulkarni",
+    "email": "aditya.kulkarni@example.com",
+    "password": "password123",
+    "passingYear": "2020",
+    "department": "Civil Engineering",
+    "employmentStatus": "EMPLOYED"
+  },
+  {
+    "enrollmentNumber": "AL-2021-018",
+    "name": "Naina Saxena",
+    "email": "naina.saxena@example.com",
+    "password": "password123",
+    "passingYear": "2021",
+    "department": "Electronics Engineering",
+    "employmentStatus": "SEEKING_OPPORTUNITIES"
+  },
+  {
+    "enrollmentNumber": "AL-2022-019",
+    "name": "Harsh Vardhan",
+    "email": "harsh.vardhan@example.com",
+    "password": "password123",
+    "passingYear": "2022",
+    "department": "Electrical Engineering",
+    "employmentStatus": "EMPLOYED"
+  },
+  {
+    "enrollmentNumber": "AL-2023-020",
+    "name": "Mehul Arora",
+    "email": "mehul.arora@example.com",
+    "password": "password123",
+    "passingYear": "2023",
+    "department": "Computer Science",
+    "employmentStatus": "SEEKING_OPPORTUNITIES"
+  }
+]

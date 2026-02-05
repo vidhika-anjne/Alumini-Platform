@@ -1,0 +1,182 @@
+[
+  {
+    "enrollmentNumber": "ST-2024-101",
+    "name": "Rahul Gupta",
+    "email": "rahul.gupta.student@example.com",
+    "password": "password123",
+    "passingYear": 2024,
+    "expectedEndDate": "2024-06-30",
+    "department": "Information Technology"
+  },
+  {
+    "enrollmentNumber": "ST-2025-102",
+    "name": "Sanya Iyer",
+    "email": "sanya.iyer.student@example.com",
+    "password": "password123",
+    "passingYear": 2025,
+    "expectedEndDate": "2025-05-15",
+    "department": "Electronics"
+  },
+  {
+    "enrollmentNumber": "ST-2024-103",
+    "name": "Aman Verma",
+    "email": "aman.verma.student@example.com",
+    "password": "password123",
+    "passingYear": 2024,
+    "expectedEndDate": "2024-06-30",
+    "department": "Computer Science"
+  },
+  {
+    "enrollmentNumber": "ST-2026-104",
+    "name": "Ritika Sharma",
+    "email": "ritika.sharma.student@example.com",
+    "password": "password123",
+    "passingYear": 2026,
+    "expectedEndDate": "2026-06-20",
+    "department": "Mechanical Engineering"
+  },
+  {
+    "enrollmentNumber": "ST-2025-105",
+    "name": "Kunal Jain",
+    "email": "kunal.jain.student@example.com",
+    "password": "password123",
+    "passingYear": 2025,
+    "expectedEndDate": "2025-06-10",
+    "department": "Civil Engineering"
+  },
+  {
+    "enrollmentNumber": "ST-2024-106",
+    "name": "Ananya Mishra",
+    "email": "ananya.mishra.student@example.com",
+    "password": "password123",
+    "passingYear": 2024,
+    "expectedEndDate": "2024-06-30",
+    "department": "Electronics"
+  },
+  {
+    "enrollmentNumber": "ST-2026-107",
+    "name": "Dev Patel",
+    "email": "dev.patel.student@example.com",
+    "password": "password123",
+    "passingYear": 2026,
+    "expectedEndDate": "2026-05-30",
+    "department": "Information Technology"
+  },
+  {
+    "enrollmentNumber": "ST-2025-108",
+    "name": "Pallavi Deshmukh",
+    "email": "pallavi.deshmukh.student@example.com",
+    "password": "password123",
+    "passingYear": 2025,
+    "expectedEndDate": "2025-06-15",
+    "department": "Computer Science"
+  },
+  {
+    "enrollmentNumber": "ST-2027-109",
+    "name": "Yash Malviya",
+    "email": "yash.malviya.student@example.com",
+    "password": "password123",
+    "passingYear": 2027,
+    "expectedEndDate": "2027-06-25",
+    "department": "Electrical Engineering"
+  },
+  {
+    "enrollmentNumber": "ST-2024-110",
+    "name": "Sneha Kulkarni",
+    "email": "sneha.kulkarni.student@example.com",
+    "password": "password123",
+    "passingYear": 2024,
+    "expectedEndDate": "2024-06-30",
+    "department": "Computer Science"
+  },
+  {
+    "enrollmentNumber": "ST-2026-111",
+    "name": "Mohit Agarwal",
+    "email": "mohit.agarwal.student@example.com",
+    "password": "password123",
+    "passingYear": 2026,
+    "expectedEndDate": "2026-06-18",
+    "department": "Mechanical Engineering"
+  },
+  {
+    "enrollmentNumber": "ST-2025-112",
+    "name": "Ishita Saxena",
+    "email": "ishita.saxena.student@example.com",
+    "password": "password123",
+    "passingYear": 2025,
+    "expectedEndDate": "2025-05-28",
+    "department": "Information Technology"
+  },
+  {
+    "enrollmentNumber": "ST-2027-113",
+    "name": "Naveen Yadav",
+    "email": "naveen.yadav.student@example.com",
+    "password": "password123",
+    "passingYear": 2027,
+    "expectedEndDate": "2027-06-20",
+    "department": "Civil Engineering"
+  },
+  {
+    "enrollmentNumber": "ST-2024-114",
+    "name": "Riya Chaturvedi",
+    "email": "riya.chaturvedi.student@example.com",
+    "password": "password123",
+    "passingYear": 2024,
+    "expectedEndDate": "2024-06-30",
+    "department": "Electronics"
+  },
+  {
+    "enrollmentNumber": "ST-2026-115",
+    "name": "Saurabh Tiwari",
+    "email": "saurabh.tiwari.student@example.com",
+    "password": "password123",
+    "passingYear": 2026,
+    "expectedEndDate": "2026-06-05",
+    "department": "Computer Science"
+  },
+  {
+    "enrollmentNumber": "ST-2025-116",
+    "name": "Megha Arvind",
+    "email": "megha.arvind.student@example.com",
+    "password": "password123",
+    "passingYear": 2025,
+    "expectedEndDate": "2025-06-12",
+    "department": "Electrical Engineering"
+  },
+  {
+    "enrollmentNumber": "ST-2027-117",
+    "name": "Arpit Bhadoria",
+    "email": "arpit.bhadoria.student@example.com",
+    "password": "password123",
+    "passingYear": 2027,
+    "expectedEndDate": "2027-06-30",
+    "department": "Information Technology"
+  },
+  {
+    "enrollmentNumber": "ST-2024-118",
+    "name": "Nidhi Soni",
+    "email": "nidhi.soni.student@example.com",
+    "password": "password123",
+    "passingYear": 2024,
+    "expectedEndDate": "2024-06-30",
+    "department": "Mechanical Engineering"
+  },
+  {
+    "enrollmentNumber": "ST-2026-119",
+    "name": "Tushar Rana",
+    "email": "tushar.rana.student@example.com",
+    "password": "password123",
+    "passingYear": 2026,
+    "expectedEndDate": "2026-06-22",
+    "department": "Civil Engineering"
+  },
+  {
+    "enrollmentNumber": "ST-2025-120",
+    "name": "Aditi Kapoor",
+    "email": "aditi.kapoor.student@example.com",
+    "password": "password123",
+    "passingYear": 2025,
+    "expectedEndDate": "2025-06-08",
+    "department": "Computer Science"
+  }
+]
