@@ -59,8 +59,12 @@ public class AlumniService {
         Alumni alumni = alumniRepository.findByEnrollmentNumber(enrollmentNumber)
                 .orElseThrow(() -> new RuntimeException("Alumni not found"));
 
-        if (updates.getEmploymentStatus() != null) {
-            alumni.setEmploymentStatus(updates.getEmploymentStatus());
+        // Only allow updating specific, necessary fields
+        if (updates.getName() != null) {
+            alumni.setName(updates.getName());
+        }
+        if (updates.getEmail() != null) {
+            alumni.setEmail(updates.getEmail());
         }
         if (updates.getDepartment() != null) {
             alumni.setDepartment(updates.getDepartment());
@@ -68,18 +72,25 @@ public class AlumniService {
         if (updates.getPassingYear() != null) {
             alumni.setPassingYear(updates.getPassingYear());
         }
-        if (updates.getName() != null) {
-            alumni.setName(updates.getName());
+        if (updates.getBio() != null) {
+            alumni.setBio(updates.getBio());
         }
-        if (updates.getEmail() != null) {
-            alumni.setEmail(updates.getEmail());
+        if (updates.getEmploymentStatus() != null) {
+            alumni.setEmploymentStatus(updates.getEmploymentStatus());
         }
-        if (updates.getPassword() != null && !updates.getPassword().startsWith("$2a$")) {
+
+        // Handle password update securely
+        if (updates.getPassword() != null && !updates.getPassword().trim().isEmpty() && !updates.getPassword().startsWith("$2a$")) {
             alumni.setPassword(passwordEncoder.encode(updates.getPassword()));
         }
 
-        if( updates.getExperiences() != null) {
-            alumni.setExperiences(updates.getExperiences());
+        // Handle collection update correctly to avoid "all-delete-orphan" error
+        if (updates.getExperiences() != null) {
+            alumni.getExperiences().clear();
+            for (Experience exp : updates.getExperiences()) {
+                exp.setAlumni(alumni); // Set the back-reference
+                alumni.getExperiences().add(exp);
+            }
         }
 
         return alumniRepository.save(alumni);
