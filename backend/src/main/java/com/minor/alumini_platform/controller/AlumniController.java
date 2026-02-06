@@ -2,10 +2,12 @@ package com.minor.alumini_platform.controller;
 
 import com.minor.alumini_platform.model.Alumni;
 import com.minor.alumini_platform.service.AlumniService;
+import com.minor.alumini_platform.service.CloudinaryService;
 import com.minor.alumini_platform.security.JwtUtil;
 import com.minor.alumini_platform.otp.OtpStorage;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,11 +21,13 @@ public class AlumniController {
     private final AlumniService alumniService;
     private final JwtUtil jwtUtil;
     private final OtpStorage otpStorage;
+    private final CloudinaryService cloudinaryService;
 
-    public AlumniController(AlumniService alumniService, JwtUtil jwtUtil, OtpStorage otpStorage) {
+    public AlumniController(AlumniService alumniService, JwtUtil jwtUtil, OtpStorage otpStorage, CloudinaryService cloudinaryService) {
         this.alumniService = alumniService;
         this.jwtUtil = jwtUtil;
         this.otpStorage = otpStorage;
+        this.cloudinaryService = cloudinaryService;
     }
 
     // Alumni registration
@@ -158,6 +162,33 @@ public class AlumniController {
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "Deletion failed: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PostMapping("/{enrollmentNumber}/avatar")
+    public ResponseEntity<Map<String, Object>> uploadAvatar(
+            @PathVariable String enrollmentNumber,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestBody(required = false) Map<String, String> body) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Alumni updated;
+            if (file != null && !file.isEmpty()) {
+                updated = alumniService.uploadAvatar(enrollmentNumber, file);
+            } else if (body != null && body.containsKey("imageUrl")) {
+                updated = alumniService.setAvatarUrl(enrollmentNumber, body.get("imageUrl"));
+            } else {
+                response.put("success", false);
+                response.put("message", "No file or image URL provided");
+                return ResponseEntity.badRequest().body(response);
+            }
+            response.put("success", true);
+            response.put("alumni", updated);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Avatar upload failed: " + e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
     }

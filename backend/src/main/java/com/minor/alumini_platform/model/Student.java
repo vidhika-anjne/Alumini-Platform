@@ -34,6 +34,9 @@ public class Student {
     private String email;
     private Integer passingYear;
     private String bio;
+    private String githubUrl;
+    private String linkedinUrl;
+    private String avatarUrl;
     private String department;
 
     @ElementCollection
@@ -76,6 +79,15 @@ public class Student {
 
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = bio; }
+
+    public String getGithubUrl() { return githubUrl; }
+    public void setGithubUrl(String githubUrl) { this.githubUrl = githubUrl; }
+
+    public String getLinkedinUrl() { return linkedinUrl; }
+    public void setLinkedinUrl(String linkedinUrl) { this.linkedinUrl = linkedinUrl; }
+
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
 
     public String getDepartment() { return department; }
     public void setDepartment(String department) { this.department = department; }

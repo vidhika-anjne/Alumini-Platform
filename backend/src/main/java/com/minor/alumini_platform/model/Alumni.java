@@ -32,6 +32,10 @@ public class Alumni {
     @Column(nullable = true, length = 1000)
     private String bio;
 
+    private String githubUrl;
+    private String linkedinUrl;
+    private String avatarUrl;
+
     @Enumerated(EnumType.STRING)
     private EmploymentStatus employmentStatus;
 
@@ -133,6 +137,30 @@ public class Alumni {
 
     public void setPosts(List<Post> posts) {
         this.posts = posts;
+    }
+
+    public String getGithubUrl() {
+        return githubUrl;
+    }
+
+    public void setGithubUrl(String githubUrl) {
+        this.githubUrl = githubUrl;
+    }
+
+    public String getLinkedinUrl() {
+        return linkedinUrl;
+    }
+
+    public void setLinkedinUrl(String linkedinUrl) {
+        this.linkedinUrl = linkedinUrl;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 
     public String getOtp() {

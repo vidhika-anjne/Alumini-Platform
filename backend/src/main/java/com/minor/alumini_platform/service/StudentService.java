@@ -9,6 +9,7 @@ import com.minor.alumini_platform.repository.StudentRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -19,11 +20,13 @@ public class StudentService {
     private final StudentRepository studentRepository;
     private final AlumniRepository alumniRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CloudinaryService cloudinaryService;
 
-    public StudentService(StudentRepository studentRepository, AlumniRepository alumniRepository, PasswordEncoder passwordEncoder) {
+    public StudentService(StudentRepository studentRepository, AlumniRepository alumniRepository, PasswordEncoder passwordEncoder, CloudinaryService cloudinaryService) {
         this.studentRepository = studentRepository;
         this.alumniRepository = alumniRepository;
         this.passwordEncoder = passwordEncoder;
+        this.cloudinaryService = cloudinaryService;
     }
 
     public Student registerStudent(Student student) {
@@ -103,6 +106,23 @@ public class StudentService {
         Student student = studentRepository.findByEnrollmentNumber(enrollmentNumber)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
         studentRepository.delete(student);
+    }
+
+    public Student uploadAvatar(String enrollmentNumber, MultipartFile file) throws Exception {
+        Student student = studentRepository.findByEnrollmentNumber(enrollmentNumber)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        String url = cloudinaryService.uploadFile(file);
+        student.setAvatarUrl(url);
+        return studentRepository.save(student);
+    }
+
+    public Student setAvatarUrl(String enrollmentNumber, String imageUrl) {
+        Student student = studentRepository.findByEnrollmentNumber(enrollmentNumber)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        student.setAvatarUrl(imageUrl);
+        return studentRepository.save(student);
     }
 
     @Transactional

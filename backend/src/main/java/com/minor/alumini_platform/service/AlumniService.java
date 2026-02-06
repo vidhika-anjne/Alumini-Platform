@@ -7,6 +7,7 @@ import com.minor.alumini_platform.repository.AlumniRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -15,10 +16,12 @@ public class AlumniService {
 
     private final AlumniRepository alumniRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CloudinaryService cloudinaryService;
 
-    public AlumniService(AlumniRepository alumniRepository, PasswordEncoder passwordEncoder) {
+    public AlumniService(AlumniRepository alumniRepository, PasswordEncoder passwordEncoder, CloudinaryService cloudinaryService) {
         this.alumniRepository = alumniRepository;
         this.passwordEncoder = passwordEncoder;
+        this.cloudinaryService = cloudinaryService;
     }
 
     public Alumni registerAlumni(Alumni alumni) {
@@ -78,6 +81,15 @@ public class AlumniService {
         if (updates.getEmploymentStatus() != null) {
             alumni.setEmploymentStatus(updates.getEmploymentStatus());
         }
+        if (updates.getGithubUrl() != null) {
+            alumni.setGithubUrl(updates.getGithubUrl());
+        }
+        if (updates.getLinkedinUrl() != null) {
+            alumni.setLinkedinUrl(updates.getLinkedinUrl());
+        }
+        if (updates.getAvatarUrl() != null) {
+            alumni.setAvatarUrl(updates.getAvatarUrl());
+        }
 
         // Handle password update securely
         if (updates.getPassword() != null && !updates.getPassword().trim().isEmpty() && !updates.getPassword().startsWith("$2a$")) {
@@ -112,6 +124,23 @@ public class AlumniService {
                 .orElseThrow(() -> new RuntimeException("Alumni not found"));
         // CascadeType.ALL on experiences and posts will handle those
         alumniRepository.delete(alumni);
+    }
+
+    public Alumni uploadAvatar(String enrollmentNumber, MultipartFile file) throws Exception {
+        Alumni alumni = alumniRepository.findByEnrollmentNumber(enrollmentNumber)
+                .orElseThrow(() -> new RuntimeException("Alumni not found"));
+
+        String url = cloudinaryService.uploadFile(file);
+        alumni.setAvatarUrl(url);
+        return alumniRepository.save(alumni);
+    }
+
+    public Alumni setAvatarUrl(String enrollmentNumber, String imageUrl) {
+        Alumni alumni = alumniRepository.findByEnrollmentNumber(enrollmentNumber)
+                .orElseThrow(() -> new RuntimeException("Alumni not found"));
+
+        alumni.setAvatarUrl(imageUrl);
+        return alumniRepository.save(alumni);
     }
 
     

@@ -5,10 +5,12 @@ import com.minor.alumini_platform.enums.AlumniDecisionStatus;
 import com.minor.alumini_platform.model.Alumni;
 import com.minor.alumini_platform.model.Student;
 import com.minor.alumini_platform.service.StudentService;
+import com.minor.alumini_platform.service.CloudinaryService;
 import com.minor.alumini_platform.security.JwtUtil;
 import com.minor.alumini_platform.otp.OtpStorage;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -24,11 +26,13 @@ public class StudentController {
     private final StudentService studentService;
     private final JwtUtil jwtUtil;
     private final OtpStorage otpStorage;
+    private final CloudinaryService cloudinaryService;
 
-    public StudentController(StudentService studentService, JwtUtil jwtUtil, OtpStorage otpStorage) {
+    public StudentController(StudentService studentService, JwtUtil jwtUtil, OtpStorage otpStorage, CloudinaryService cloudinaryService) {
         this.studentService = studentService;
         this.jwtUtil = jwtUtil;
         this.otpStorage = otpStorage;
+        this.cloudinaryService = cloudinaryService;
     }
 
     // Student registration
@@ -201,6 +205,9 @@ public class StudentController {
             if (student.getName() != null) existingStudent.setName(student.getName());
             if (student.getEmail() != null) existingStudent.setEmail(student.getEmail());
             if (student.getBio() != null) existingStudent.setBio(student.getBio());
+            if (student.getGithubUrl() != null) existingStudent.setGithubUrl(student.getGithubUrl());
+            if (student.getLinkedinUrl() != null) existingStudent.setLinkedinUrl(student.getLinkedinUrl());
+            if (student.getAvatarUrl() != null) existingStudent.setAvatarUrl(student.getAvatarUrl());
             if (student.getSkills() != null) existingStudent.setSkills(student.getSkills());
             if (student.getPassingYear() != null) existingStudent.setPassingYear(student.getPassingYear());
             if (student.getPassword() != null) existingStudent.setPassword(student.getPassword());
@@ -212,6 +219,33 @@ public class StudentController {
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "Update failed: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PostMapping("/{enrollmentNumber}/avatar")
+    public ResponseEntity<Map<String, Object>> uploadAvatar(
+            @PathVariable String enrollmentNumber,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestBody(required = false) Map<String, String> body) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Student updated;
+            if (file != null && !file.isEmpty()) {
+                updated = studentService.uploadAvatar(enrollmentNumber, file);
+            } else if (body != null && body.containsKey("imageUrl")) {
+                updated = studentService.setAvatarUrl(enrollmentNumber, body.get("imageUrl"));
+            } else {
+                response.put("success", false);
+                response.put("message", "No file or image URL provided");
+                return ResponseEntity.badRequest().body(response);
+            }
+            response.put("success", true);
+            response.put("student", updated);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Avatar upload failed: " + e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
     }
