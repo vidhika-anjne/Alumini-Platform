@@ -9,7 +9,9 @@ export default function Profile() {
   const [msg, setMsg] = useState('')
   const [avatarFile, setAvatarFile] = useState(null)
   const [avatarUrlInput, setAvatarUrlInput] = useState('')
-  const [isEditing, setIsEditing] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [shareLink, setShareLink] = useState('')
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     setProfile(user || null)
@@ -108,6 +110,32 @@ export default function Profile() {
   const skillsArray = Array.isArray(profile?.skills) 
     ? profile.skills 
     : (profile?.skills || '').split(',').map(s => s.trim()).filter(Boolean)
+
+  const generateShareLink = () => {
+    const baseUrl = window.location.origin
+    const profileLink = `${baseUrl}/profile/${userType}/${profile.enrollmentNumber}`
+    setShareLink(profileLink)
+    setShowShareModal(true)
+    setCopied(false)
+  }
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(shareLink)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = shareLink
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
 
   if (!profile) return <p className="container">No profile</p>
 
@@ -208,15 +236,65 @@ export default function Profile() {
               {/* Edit Button */}
               <button 
                 className="button primary profile-edit-btn" 
-                onClick={() => setIsEditing(!isEditing)}
+                onClick={generateShareLink}
               >
-                {isEditing ? 'Cancel Editing' : 'Edit Profile'}
+                Share profile                
               </button>
             </div>
           </aside>
 
+          {/* Share Profile Modal */}
+          {showShareModal && (
+            <div className="modal-overlay" onClick={() => setShowShareModal(false)}>
+              <div className="modal-content share-modal" onClick={(e) => e.stopPropagation()}>
+                <button className="modal-close" onClick={() => setShowShareModal(false)}>×</button>
+                <h3 className="share-modal-title">🔗 Share Your Profile</h3>
+                <p className="share-modal-description">
+                  Copy the link below to share your profile with others:
+                </p>
+                <div className="share-link-container">
+                  <input 
+                    type="text" 
+                    className="input share-link-input" 
+                    value={shareLink} 
+                    readOnly 
+                  />
+                  <button 
+                    className={`button ${copied ? 'success' : 'primary'}`} 
+                    onClick={copyToClipboard}
+                  >
+                    {copied ? '✓ Copied!' : 'Copy'}
+                  </button>
+                </div>
+                <div className="share-social-buttons">
+                  <a 
+                    href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareLink)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="button share-social-btn linkedin"
+                  >
+                    💼 LinkedIn
+                  </a>
+                  <a 
+                    href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareLink)}&text=${encodeURIComponent('Check out my profile!')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="button share-social-btn twitter"
+                  >
+                    🐦 Twitter
+                  </a>
+                  <a 
+                    href={`mailto:?subject=${encodeURIComponent('Check out my profile')}&body=${encodeURIComponent(`Here's my profile: ${shareLink}`)}`}
+                    className="button share-social-btn email"
+                  >
+                    ✉️ Email
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Right Section - Edit Form */}
-          {isEditing && (
             <main className="profile-main">
               <div className="card profile-edit-card">
                 <h2 className="profile-edit-title">Edit Profile</h2>
@@ -337,7 +415,6 @@ export default function Profile() {
                 </div>
               </div>
             </main>
-          )}
         </div>
       </div>
     </div>

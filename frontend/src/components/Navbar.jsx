@@ -34,7 +34,7 @@ export default function Navbar() {
           <img
             src={logo}
             alt="Company Logo"
-            style={{ width: "150px", height: "auto", cursor: "pointer" }}
+            style={{ width: "160px", height: "auto", cursor: "pointer",gap:"30px" }}
           />
           </Link>
         <button className="nav-toggle" onClick={() => setOpen((o) => !o)} aria-label="Toggle navigation">☰</button>
