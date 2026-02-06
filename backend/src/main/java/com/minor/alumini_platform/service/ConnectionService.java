@@ -44,8 +44,14 @@ public class ConnectionService {
         boolean isReceiverAlumni = alumniRepository.findByEnrollmentNumber(receiverId).isPresent();
         boolean isReceiverStudent = studentRepository.findByEnrollmentNumber(receiverId).isPresent();
 
-        if (!((isRequesterAlumni && isReceiverStudent) || (isRequesterStudent && isReceiverAlumni))) {
-            throw new RuntimeException("Connections are only allowed between Alumni and Students");
+        // New Logic: Allow Alumni-to-Alumni and Alumni-Student. Still block Student-to-Student.
+        if (isRequesterStudent && isReceiverStudent) {
+            throw new RuntimeException("Students cannot connect with other students. They can only connect with Alumni.");
+        }
+
+        // Ensure both users exist
+        if (!((isRequesterAlumni || isRequesterStudent) && (isReceiverAlumni || isReceiverStudent))) {
+            throw new RuntimeException("One or both users do not exist");
         }
 
         Optional<Connection> existing = connectionRepository.findConnectionBetween(requesterId, receiverId);
