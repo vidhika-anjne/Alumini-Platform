@@ -5,12 +5,17 @@ import com.minor.alumini_platform.model.Connection;
 import com.minor.alumini_platform.repository.AlumniRepository;
 import com.minor.alumini_platform.repository.ConnectionRepository;
 import com.minor.alumini_platform.repository.StudentRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ConnectionService {
@@ -53,6 +58,11 @@ public class ConnectionService {
     }
 
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "connectionStatus", key = "#requesterId < #receiverId ? #requesterId + '-' + #receiverId : #receiverId + '-' + #requesterId"),
+        @CacheEvict(value = "userConnections", key = "#requesterId"),
+        @CacheEvict(value = "userConnections", key = "#receiverId")
+    })
     public void acceptRequest(String receiverId, String requesterId) {
         Connection connection = connectionRepository.findByRequesterIdAndReceiverId(requesterId, receiverId)
                 .orElseThrow(() -> new RuntimeException("Connection request not found"));
@@ -67,6 +77,11 @@ public class ConnectionService {
     }
 
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "connectionStatus", key = "#requesterId < #receiverId ? #requesterId + '-' + #receiverId : #receiverId + '-' + #requesterId"),
+        @CacheEvict(value = "userConnections", key = "#requesterId"),
+        @CacheEvict(value = "userConnections", key = "#receiverId")
+    })
     public void rejectRequest(String receiverId, String requesterId) {
         Connection connection = connectionRepository.findByRequesterIdAndReceiverId(requesterId, receiverId)
                 .orElseThrow(() -> new RuntimeException("Connection request not found"));
@@ -74,6 +89,7 @@ public class ConnectionService {
         connectionRepository.delete(connection);
     }
 
+    @Cacheable(value = "connectionStatus", key = "#userId1 < #userId2 ? #userId1 + '-' + #userId2 : #userId2 + '-' + #userId1")
     public boolean areConnected(String userId1, String userId2) {
         return connectionRepository.findConnectionBetween(userId1, userId2)
                 .map(c -> c.getStatus() == ConnectionStatus.ACCEPTED)
@@ -84,6 +100,7 @@ public class ConnectionService {
         return connectionRepository.findByReceiverIdAndStatus(userId, ConnectionStatus.PENDING);
     }
 
+    @Cacheable(value = "userConnections", key = "#userId")
     public List<Connection> getMyConnections(String userId) {
         return connectionRepository.findAllAcceptedForUser(userId);
     }
