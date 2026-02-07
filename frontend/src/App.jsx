@@ -5,7 +5,6 @@ import Feed from './pages/Feed'
 import Profile from './pages/Profile'
 import Chat from './pages/Chat'
 import Mentors from './pages/Mentors'
-import Stories from './pages/Stories'
 import Dashboard from './pages/Dashboard'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -39,7 +38,6 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/stories" element={<Stories />} />
             <Route
               path="/profile"
               element={

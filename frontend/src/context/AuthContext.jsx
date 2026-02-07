@@ -50,6 +50,17 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
+  const deleteAccount = async () => {
+    if (!user?.enrollmentNumber || !userType) {
+      throw new Error('No user logged in')
+    }
+    const url = userType === 'alumni'
+      ? `/api/v1/alumni/${user.enrollmentNumber}`
+      : `/api/v1/students/${user.enrollmentNumber}`
+    await api.delete(url)
+    logout()
+  }
+
   // Allow updating the current user object (frontend-only fields like social links)
   const updateUser = (updates) => {
     setUser((prev) => {
@@ -65,7 +76,7 @@ export function AuthProvider({ children }) {
     setUser(nextUser || null)
   }
 
-  const value = { token, userType, user, login, register, logout, updateUser, switchAccount }
+  const value = { token, userType, user, login, register, logout, deleteAccount, updateUser, switchAccount }
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 

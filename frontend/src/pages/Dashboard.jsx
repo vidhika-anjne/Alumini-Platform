@@ -68,7 +68,7 @@ export default function Dashboard() {
             <div className="stat-label">Success Stories</div>
           </div>
           <p className="small">Join the stories — celebrate wins and inspire peers.</p>
-          <Link className="button cta" to="/stories">View Stories</Link>
+          <Link className="button cta" >View Stories</Link>
         </div>
         <div className="stat-card card-vibrant">
           <div className="stat-head">

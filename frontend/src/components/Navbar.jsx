@@ -42,7 +42,6 @@ export default function Navbar() {
       <nav className={`nav ${open ? 'open' : ''}`}>
         <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'active' : ''}>Dashboard</NavLink>
         <NavLink to="/feed" className={({ isActive }) => isActive ? 'active' : ''}>Feed</NavLink>
-        <NavLink to="/stories" className={({ isActive }) => isActive ? 'active' : ''}>Stories</NavLink>
         {token && <NavLink to="/mentors" className={({ isActive }) => isActive ? 'active' : ''}>Mentors</NavLink>}
         {token && <NavLink to="/chat" className={({ isActive }) => isActive ? 'active' : ''}>Chat</NavLink>}
         {token && <NavLink to="/profile" className={({ isActive }) => isActive ? 'active' : ''}>Profile</NavLink>}

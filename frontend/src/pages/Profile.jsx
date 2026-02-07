@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/client'
 import AlumniStatusBanner from '../components/AlumniStatusBanner'
 
 export default function Profile() {
-  const { userType, user, updateUser } = useAuth()
+  const navigate = useNavigate()
+  const { userType, user, updateUser, deleteAccount } = useAuth()
   const [profile, setProfile] = useState(user || null)
   const [msg, setMsg] = useState('')
   const [avatarFile, setAvatarFile] = useState(null)
@@ -12,6 +14,9 @@ export default function Profile() {
   const [showShareModal, setShowShareModal] = useState(false)
   const [shareLink, setShareLink] = useState('')
   const [copied, setCopied] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     setProfile(user || null)
@@ -134,6 +139,18 @@ export default function Profile() {
       document.body.removeChild(textArea)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    setDeleteError('')
+    setIsDeleting(true)
+    try {
+      await deleteAccount()
+      navigate('/login')
+    } catch (err) {
+      setDeleteError(err?.response?.data?.message || err?.message || 'Failed to delete account')
+      setIsDeleting(false)
     }
   }
 
@@ -413,8 +430,50 @@ export default function Profile() {
                   </button>
                   {msg && <p className={`profile-msg ${msg.includes('failed') ? 'error' : 'success'}`}>{msg}</p>}
                 </div>
+
+                {/* Delete Account Section */}
+                <div className="profile-delete-section">
+                  <h3 className="profile-edit-section-title danger">Danger Zone</h3>
+                  <p className="delete-warning-text">Once you delete your account, there is no going back. Please be certain.</p>
+                  <button 
+                    className="button danger" 
+                    onClick={() => setShowDeleteModal(true)}
+                  >
+                    Delete Account
+                  </button>
+                </div>
               </div>
             </main>
+
+          {/* Delete Account Confirmation Modal */}
+          {showDeleteModal && (
+            <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
+              <div className="modal-content delete-modal" onClick={(e) => e.stopPropagation()}>
+                <button className="modal-close" onClick={() => setShowDeleteModal(false)}>×</button>
+                <h3 className="delete-modal-title">⚠️ Delete Account</h3>
+                <p className="delete-modal-description">
+                  Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed.
+                </p>
+                {deleteError && <p className="delete-error">{deleteError}</p>}
+                <div className="delete-modal-buttons">
+                  <button 
+                    className="button" 
+                    onClick={() => setShowDeleteModal(false)}
+                    disabled={isDeleting}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    className="button danger" 
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? 'Deleting...' : 'Yes, Delete My Account'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

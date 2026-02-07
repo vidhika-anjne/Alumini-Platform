@@ -141,7 +141,7 @@ export default function Register() {
         </label>
         <label className="label">
           Passing Year
-          <input className="input" value={passingYear} onChange={(e) => setPassingYear(e.target.value)} />
+          <input className="input" value={passingYear} onChange={(e) => setPassingYear(e.target.value)} required/>
         </label>
         {role === 'alumni' && (
           <label className="label">
