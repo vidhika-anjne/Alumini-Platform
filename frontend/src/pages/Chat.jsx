@@ -15,6 +15,7 @@ export default function Chat() {
   const [input, setInput] = useState('')
   const [recipientId, setRecipientId] = useState('')
   const [typingMap, setTypingMap] = useState({})
+  const [chatError, setChatError] = useState('')
 
   const stompRef = useRef(null)
   const typingTimer = useRef(null)
@@ -116,7 +117,15 @@ export default function Chat() {
   const createPrivateConversation = async () => {
     const other = recipientId.trim()
     if (!other || !currentId) return
+    setChatError('')
     try {
+      // Check if connected first
+      const { data: statusData } = await api.get(`/api/v1/connections/status/${other}`)
+      if (!statusData.connected) {
+        setChatError('You must be connected with this user to start a conversation')
+        return
+      }
+      
       const { data: conv } = await api.post('/api/v1/conversations', { type: 'PRIVATE' })
       // add both participants
       await api.post('/api/v1/participants', { participantId: String(currentId), conversation: { id: conv.id } })
@@ -125,7 +134,7 @@ export default function Chat() {
       setRecipientId('')
       setSelectedConv(conv)
     } catch (err) {
-      // optional: show error
+      setChatError(err?.response?.data?.message || 'Failed to start conversation')
     }
   }
 
@@ -142,6 +151,7 @@ export default function Chat() {
           />
           <button className="button cta" onClick={createPrivateConversation}>Start</button>
         </div>
+        {chatError && <p className="small" style={{ color: 'tomato', marginTop: 4 }}>{chatError}</p>}
         <ul style={{ listStyle: 'none', padding: 0, marginTop: 12 }}>
           {conversations.map((c) => (
             <li key={c.id} style={{ marginBottom: 8 }}>

@@ -2,6 +2,7 @@ import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { useState, useEffect } from 'react'
+import api from '../api/client'
 import logo from '../images/White-Logos-for-Acropolis.png'
 
 export default function Navbar() {
@@ -10,6 +11,7 @@ export default function Navbar() {
   const nav = useNavigate()
   const location = useLocation()
   const [open, setOpen] = useState(false)
+  const [notificationCount, setNotificationCount] = useState(0)
 
   const handleLogout = () => {
     logout()
@@ -21,6 +23,27 @@ export default function Navbar() {
     .trim()
     .charAt(0)
     .toUpperCase()
+
+  // Fetch notification count
+  useEffect(() => {
+    const fetchNotificationCount = async () => {
+      if (!token) {
+        setNotificationCount(0)
+        return
+      }
+      try {
+        const { data } = await api.get('/api/v1/connections/pending')
+        setNotificationCount(data?.length || 0)
+      } catch {
+        setNotificationCount(0)
+      }
+    }
+
+    fetchNotificationCount()
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchNotificationCount, 30000)
+    return () => clearInterval(interval)
+  }, [token])
 
   // Close the mobile menu on any route change (e.g., when a nav option is clicked)
   useEffect(() => {
@@ -44,6 +67,16 @@ export default function Navbar() {
         <NavLink to="/feed" className={({ isActive }) => isActive ? 'active' : ''}>Feed</NavLink>
         {token && <NavLink to="/mentors" className={({ isActive }) => isActive ? 'active' : ''}>Mentors</NavLink>}
         {token && <NavLink to="/chat" className={({ isActive }) => isActive ? 'active' : ''}>Chat</NavLink>}
+        {token && (
+          <NavLink to="/notifications" className={({ isActive }) => isActive ? 'active' : ''} style={{ position: 'relative' }}>
+            Notifications
+            {notificationCount > 0 && (
+              <span className="notification-badge">
+                {notificationCount > 99 ? '99+' : notificationCount}
+              </span>
+            )}
+          </NavLink>
+        )}
         {token && <NavLink to="/profile" className={({ isActive }) => isActive ? 'active' : ''}>Profile</NavLink>}
         {!token && <NavLink to="/login" className={({ isActive }) => isActive ? 'active' : ''}>Login</NavLink>}
         {!token && <NavLink to="/register" className={({ isActive }) => isActive ? 'active' : ''}>Register</NavLink>}

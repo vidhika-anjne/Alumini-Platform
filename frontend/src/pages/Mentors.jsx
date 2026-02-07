@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import api from '../api/client'
 import { useAuth } from '../context/AuthContext'
+import AuthDebug from '../components/AuthDebug'
 
 export default function Mentors() {
   const { token, user } = useAuth()
@@ -8,25 +9,158 @@ export default function Mentors() {
 
   const [filters, setFilters] = useState({ name: '', department: '', passingYear: '', status: '', company: '', jobTitle: '' })
   const [results, setResults] = useState([])
-  // const [page, setPage] = useState(0)
-  // const [size, setSize] = useState(8)
-  // const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [connectionStatus, setConnectionStatus] = useState({}) // { alumniEnrollment: 'NONE' | 'PENDING' | 'CONNECTED' | 'RECEIVED' }
+  const [pendingRequests, setPendingRequests] = useState([]) // Requests sent TO current user
+
+  // Fetch connection status for a specific user
+  const fetchConnectionStatus = useCallback(async (otherUserId) => {
+    if (!token || !currentId) return 'NONE'
+    try {
+      const { data } = await api.get(`/api/v1/connections/status/${otherUserId}`)
+      return data.connected ? 'CONNECTED' : 'NONE'
+    } catch {
+      return 'NONE'
+    }
+  }, [token, currentId])
+
+  // Fetch pending requests (where current user is receiver)
+  const fetchPendingRequests = useCallback(async () => {
+    if (!token) return
+    try {
+      const { data } = await api.get('/api/v1/connections/pending')
+      setPendingRequests(data || [])
+    } catch {
+      setPendingRequests([])
+    }
+  }, [token])
+
+  // Fetch my sent requests that are still pending
+  const fetchMyConnections = useCallback(async () => {
+    if (!token) return []
+    try {
+      const { data } = await api.get('/api/v1/connections/mine')
+      return data || []
+    } catch {
+      return []
+    }
+  }, [token])
 
   const fetchMentors = async () => {
     setLoading(true)
     setError('')
     try {
-      // Fetch all alumni without pagination
+      // Debug authentication
+      console.log('Token:', token)
+      console.log('User:', user)
+      console.log('Making request to /api/v1/alumni')
+      
       const { data } = await api.get('/api/v1/alumni')
-      setResults(Array.isArray(data) ? data : [])
+      console.log('Response received:', data)
+      const mentors = Array.isArray(data) ? data : []
+      setResults(mentors)
+
+      // Fetch connection statuses for all mentors
+      if (token && currentId && mentors.length > 0) {
+        await fetchPendingRequests()
+        const myConnections = await fetchMyConnections()
+        
+        const statusMap = {}
+        for (const mentor of mentors) {
+          const mentorId = String(mentor.enrollmentNumber)
+          if (mentorId === String(currentId)) {
+            statusMap[mentorId] = 'SELF'
+            continue
+          }
+
+          // Check if already connected
+          const isConnected = myConnections.some(c => 
+            c.status === 'ACCEPTED' && (c.requesterId === mentorId || c.receiverId === mentorId)
+          )
+          if (isConnected) {
+            statusMap[mentorId] = 'CONNECTED'
+            continue
+          }
+
+          // Check if we sent a pending request
+          const sentPending = myConnections.some(c => 
+            c.status === 'PENDING' && c.receiverId === mentorId
+          )
+          if (sentPending) {
+            statusMap[mentorId] = 'PENDING_SENT'
+            continue
+          }
+
+          // Check if we received a pending request from this mentor
+          const receivedPending = pendingRequests.some(c => c.requesterId === mentorId)
+          if (receivedPending) {
+            statusMap[mentorId] = 'PENDING_RECEIVED'
+            continue
+          }
+
+          statusMap[mentorId] = 'NONE'
+        }
+        setConnectionStatus(statusMap)
+      }
     } catch (e) {
+      console.error('Error fetching mentors:', e)
+      console.error('Error response:', e.response)
+      console.error('Error status:', e.response?.status)
+      console.error('Error data:', e.response?.data)
+      console.error('Request headers:', e.config?.headers)
       setError(e?.response?.data?.message || 'Failed to load mentors')
     } finally { setLoading(false) }
   }
 
-  useEffect(() => { fetchMentors() }, [])
+  // Refetch connection status after pending requests change
+  useEffect(() => {
+    if (results.length > 0 && pendingRequests) {
+      const statusMap = { ...connectionStatus }
+      for (const mentor of results) {
+        const mentorId = String(mentor.enrollmentNumber)
+        const receivedPending = pendingRequests.some(c => c.requesterId === mentorId)
+        if (receivedPending && statusMap[mentorId] !== 'CONNECTED') {
+          statusMap[mentorId] = 'PENDING_RECEIVED'
+        }
+      }
+      setConnectionStatus(statusMap)
+    }
+  }, [pendingRequests])
+
+  useEffect(() => { fetchMentors() }, [token, currentId])
+
+  const sendConnectionRequest = async (alumni) => {
+    if (!currentId || !token) return
+    try {
+      await api.post(`/api/v1/connections/request/${alumni.enrollmentNumber}`)
+      setConnectionStatus(prev => ({ ...prev, [alumni.enrollmentNumber]: 'PENDING_SENT' }))
+    } catch (e) {
+      setError(e?.response?.data?.message || 'Failed to send connection request')
+    }
+  }
+
+  const acceptRequest = async (alumni) => {
+    if (!currentId || !token) return
+    try {
+      await api.post(`/api/v1/connections/accept/${alumni.enrollmentNumber}`)
+      setConnectionStatus(prev => ({ ...prev, [alumni.enrollmentNumber]: 'CONNECTED' }))
+      setPendingRequests(prev => prev.filter(c => c.requesterId !== alumni.enrollmentNumber))
+    } catch (e) {
+      setError(e?.response?.data?.message || 'Failed to accept connection request')
+    }
+  }
+
+  const rejectRequest = async (alumni) => {
+    if (!currentId || !token) return
+    try {
+      await api.post(`/api/v1/connections/reject/${alumni.enrollmentNumber}`)
+      setConnectionStatus(prev => ({ ...prev, [alumni.enrollmentNumber]: 'NONE' }))
+      setPendingRequests(prev => prev.filter(c => c.requesterId !== alumni.enrollmentNumber))
+    } catch (e) {
+      setError(e?.response?.data?.message || 'Failed to reject connection request')
+    }
+  }
 
   const startChat = async (alumni) => {
     if (!currentId || !token) return
@@ -34,17 +168,38 @@ export default function Mentors() {
       const { data: conv } = await api.post('/api/v1/conversations', { type: 'PRIVATE' })
       await api.post('/api/v1/participants', { participantId: String(currentId), conversation: { id: conv.id } })
       await api.post('/api/v1/participants', { participantId: String(alumni.enrollmentNumber), conversation: { id: conv.id } })
-      // navigate to chat page (simple redirect)
       window.location.href = '/chat'
     } catch (e) {
       setError(e?.response?.data?.message || 'Failed to start chat')
     }
   }
 
+  const renderConnectionButton = (alumni) => {
+    const mentorId = String(alumni.enrollmentNumber)
+    const status = connectionStatus[mentorId] || 'NONE'
+
+    if (status === 'SELF') return null
+    if (status === 'CONNECTED') {
+      return <button className="button primary" onClick={() => startChat(alumni)} disabled={!token}>Chat</button>
+    }
+    if (status === 'PENDING_SENT') {
+      return <button className="button" disabled>Request Sent</button>
+    }
+    if (status === 'PENDING_RECEIVED') {
+      return (
+        <div style={{ display: 'flex', gap: 4 }}>
+          <button className="button primary" onClick={() => acceptRequest(alumni)}>Accept</button>
+          <button className="button" onClick={() => rejectRequest(alumni)}>Reject</button>
+        </div>
+      )
+    }
+    return <button className="button" onClick={() => sendConnectionRequest(alumni)} disabled={!token}>Connect</button>
+  }
+
   return (
     <div className="container">
+      <AuthDebug />
       <h2>Find Mentors</h2>
-      {/* Search filters commented out for now */}
       <div className="card" style={{ display: 'grid', gap: 8, gridTemplateColumns: 'repeat(6, 1fr)' }}>
         <input className="input" placeholder="Name" value={filters.name} onChange={(e) => setFilters({ ...filters, name: e.target.value })} />
         <input className="input" placeholder="Department" value={filters.department} onChange={(e) => setFilters({ ...filters, department: e.target.value })} />
@@ -52,6 +207,8 @@ export default function Mentors() {
         <select className="select" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
           <option value="">Any status</option>
           <option value="EMPLOYED">Employed</option>
+          <option value="UNEMPLOYED">Unemployed</option>
+          <option value="SELF_EMPLOYED">Self-Employed</option>
           <option value="SEEKING_OPPORTUNITIES">Seeking Opportunities</option>
           <option value="HIGHER_STUDIES">Higher Studies</option>
           <option value="ENTREPRENEUR">Entrepreneur</option>
@@ -83,18 +240,11 @@ export default function Mentors() {
                 </div>
               )}
               <div style={{ marginTop: 8 }}>
-                <button className="button primary" onClick={() => startChat(a)} disabled={!token}>Chat</button>
+                {renderConnectionButton(a)}
               </div>
             </div>
           ))}
         </div>
-        {/* Pagination commented out for now
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 12 }}>
-          <button className="button" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page <= 0}>Previous</button>
-          <span className="small">Page {page + 1} of {Math.max(1, totalPages)}</span>
-          <button className="button" onClick={() => setPage((p) => (p + 1 < totalPages ? p + 1 : p))} disabled={page + 1 >= totalPages}>Next</button>
-        </div>
-        */}
       </div>
     </div>
   )

@@ -27,15 +27,35 @@ export function AuthProvider({ children }) {
   }, [user])
 
   const login = async (role, enrollmentNumber, password) => {
+    console.log('Login attempt:', { role, enrollmentNumber })
     const url = role === 'alumni' ? '/api/v1/alumni/login' : '/api/v1/students/login'
-    const { data } = await api.post(url, { enrollmentNumber, password })
-    const tok = data.token
-    const utype = data.userType || role
-    const obj = role === 'alumni' ? data.alumni : data.student
-    setToken(tok)
-    setUserType(utype)
-    setUser(obj)
-    return { token: tok, userType: utype, user: obj }
+    
+    try {
+      const { data } = await api.post(url, { enrollmentNumber, password })
+      console.log('Login response:', data)
+      
+      const tok = data.token
+      const utype = data.userType || role
+      const obj = role === 'alumni' ? data.alumni : data.student
+      
+      console.log('Setting auth state:', { token: tok ? 'present' : 'missing', userType: utype, user: obj })
+      
+      if (!tok) {
+        throw new Error('No token received from server')
+      }
+      
+      setToken(tok)
+      setUserType(utype)
+      setUser(obj)
+      
+      // Verify localStorage
+      console.log('Token stored in localStorage:', localStorage.getItem('token') ? 'yes' : 'no')
+      
+      return { token: tok, userType: utype, user: obj }
+    } catch (error) {
+      console.error('Login failed:', error)
+      throw error
+    }
   }
 
   const register = async (role, payload) => {

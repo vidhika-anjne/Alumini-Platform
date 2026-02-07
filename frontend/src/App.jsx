@@ -6,6 +6,7 @@ import Profile from './pages/Profile'
 import Chat from './pages/Chat'
 import Mentors from './pages/Mentors'
 import Dashboard from './pages/Dashboard'
+import Notifications from './pages/Notifications'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -51,6 +52,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <Chat />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <Notifications />
                 </ProtectedRoute>
               }
             />
