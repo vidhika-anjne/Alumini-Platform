@@ -37,8 +37,8 @@ export default function PostForm({ onCreated }) {
   return (
     <form onSubmit={submit} className="card" style={{ marginBottom: 16 }}>
       <h4>Create Post</h4>
-      <textarea className="textarea" value={content} onChange={(e) => setContent(e.target.value)} rows={3} placeholder="What's happening?" />
-      <input className="input" type="file" accept="image/*,video/*" onChange={(e) => setFile(e.target.files[0])} />
+      <textarea className="textarea" value={content} onChange={(e) => setContent(e.target.value)} rows={1} placeholder="What's happening?" />
+      <input className="" type="file" accept="image/*,video/*" onChange={(e) => setFile(e.target.files[0])} />
       {error && <p style={{ color: 'tomato' }}>{error}</p>}
       <button className="button primary" disabled={loading} type="submit">{loading ? 'Posting…' : 'Post'}</button>
     </form>

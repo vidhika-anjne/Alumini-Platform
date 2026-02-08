@@ -11,6 +11,7 @@
   --black: #000000;
   --black-rgb: 0, 0, 0;
 }
+/* linear-gradient(135deg, #667eea 0%, #764ba2 100%) */
 
 :root[data-theme="dark"] {
   --bg: #0b1020;
