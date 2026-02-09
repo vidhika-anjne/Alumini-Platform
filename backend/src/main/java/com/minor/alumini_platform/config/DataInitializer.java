@@ -6,6 +6,7 @@ import com.minor.alumini_platform.model.Alumni;
 import com.minor.alumini_platform.model.Student;
 import com.minor.alumini_platform.repository.AlumniRepository;
 import com.minor.alumini_platform.repository.StudentRepository;
+import com.minor.alumini_platform.service.SearchProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
@@ -23,6 +24,7 @@ public class DataInitializer implements CommandLineRunner {
     private final AlumniRepository alumniRepository;
     private final ObjectMapper objectMapper;
     private final PasswordEncoder passwordEncoder;
+    private final SearchProfileService searchProfileService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -33,6 +35,16 @@ public class DataInitializer implements CommandLineRunner {
         if (alumniRepository.count() == 0) {
             loadAlumni();
         }
+
+        // Ensure all existing data is synced (in case some were added manually or before the sync was implemented)
+        syncAllProfiles();
+    }
+
+    private void syncAllProfiles() {
+        System.out.println("🔄 Syncing search profiles for all users...");
+        studentRepository.findAll().forEach(s -> searchProfileService.syncStudentProfile(s.getEnrollmentNumber()));
+        alumniRepository.findAll().forEach(a -> searchProfileService.syncAlumniProfile(a.getEnrollmentNumber()));
+        System.out.println("✅ All search profiles synced");
     }
 
     private void loadStudents() throws Exception {

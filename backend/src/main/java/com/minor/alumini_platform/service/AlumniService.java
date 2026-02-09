@@ -17,17 +17,22 @@ public class AlumniService {
     private final AlumniRepository alumniRepository;
     private final PasswordEncoder passwordEncoder;
     private final CloudinaryService cloudinaryService;
+    private final SearchProfileService searchProfileService;
 
-    public AlumniService(AlumniRepository alumniRepository, PasswordEncoder passwordEncoder, CloudinaryService cloudinaryService) {
+    public AlumniService(AlumniRepository alumniRepository, PasswordEncoder passwordEncoder, 
+                         CloudinaryService cloudinaryService, SearchProfileService searchProfileService) {
         this.alumniRepository = alumniRepository;
         this.passwordEncoder = passwordEncoder;
         this.cloudinaryService = cloudinaryService;
+        this.searchProfileService = searchProfileService;
     }
 
     public Alumni registerAlumni(Alumni alumni) {
         try {
             alumni.setPassword(passwordEncoder.encode(alumni.getPassword()));
-            return alumniRepository.save(alumni);
+            Alumni saved = alumniRepository.save(alumni);
+            searchProfileService.syncAlumniProfile(saved.getEnrollmentNumber());
+            return saved;
         } catch (Exception e) {
             if (e.getMessage().contains("Duplicate entry") || e.getMessage().contains("ConstraintViolationException")) {
                 if (e.getMessage().contains("enrollment_number")) {
@@ -105,7 +110,9 @@ public class AlumniService {
             }
         }
 
-        return alumniRepository.save(alumni);
+        Alumni saved = alumniRepository.save(alumni);
+        searchProfileService.syncAlumniProfile(saved.getEnrollmentNumber());
+        return saved;
     }
 
     public Alumni addExperience(String enrollmentNumber, Experience experience) {
@@ -115,7 +122,9 @@ public class AlumniService {
         experience.setAlumni(alumni); // link to alumni
         alumni.getExperiences().add(experience);
 
-        return alumniRepository.save(alumni);
+        Alumni saved = alumniRepository.save(alumni);
+        searchProfileService.syncAlumniProfile(saved.getEnrollmentNumber());
+        return saved;
     }
 
     @Transactional
