@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react'
 import api from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import PostForm from '../components/PostForm'
+import '../styles.css'
 
 export default function Feed() {
   const [posts, setPosts] = useState([])
+  const [showPostForm, setShowPostForm] = useState(false)
+  const [postPrompt, setPostPrompt] = useState('')
   const { userType } = useAuth()
 
   const load = async () => {
@@ -13,11 +16,29 @@ export default function Feed() {
     setPosts(items)
   }
 
+  const handleSuggestionClick = (suggestion) => {
+    setPostPrompt(suggestion.prompt)
+    setShowPostForm(true)
+    // Scroll to top where post form is located
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   useEffect(() => { load() }, [])
 
   return (
-    <div className=" container bg-neutral-section" style={{ maxWidth: '80%', padding: 16, margin:' 2% 20% ', borderRadius: 12 }}>
-      {userType === 'alumni' && <PostForm onCreated={() => load()} />}
+    <div className="container bg-neutral-section max-w-4xl p-4 mx-auto rounded-xl">
+      {userType === 'alumni' && (
+        <PostForm 
+          onCreated={() => {
+            load()
+            setShowPostForm(false)
+            setPostPrompt('')
+          }} 
+          initialPrompt={postPrompt}
+          showForm={showPostForm}
+          onToggleForm={() => setShowPostForm(!showPostForm)}
+        />
+      )}
       
       <div className="grid">
         {Array.isArray(posts) && posts.map((p) => (
@@ -25,9 +46,9 @@ export default function Feed() {
             <p>{p.content}</p>
             {p.mediaUrl && (
               p.mediaUrl.match(/\.mp4|\.webm$/i) ? (
-                <video src={p.mediaUrl} controls style={{ maxWidth: '100%', borderRadius: 8 }} />
+                <video src={p.mediaUrl} controls className="max-w-full rounded-lg" />
               ) : (
-                <img src={p.mediaUrl} alt="media" style={{ maxWidth: '100%', borderRadius: 8 }} />
+                <img src={p.mediaUrl} alt="media" className="max-w-full rounded-lg" />
               )
             )}
             <div className="small">by alumni #{p.alumni?.id}</div>
@@ -36,41 +57,108 @@ export default function Feed() {
       </div>
 
       {userType === 'alumni' && (
-        <div style={{ marginTop: 24 }}>
-          <h3 style={{ marginBottom: 16, color: '#667eea', textAlign: 'center' }}>💡 Help Your Juniors - Share Your Insights</h3>
-          <div className="grid" style={{ gap: 25, justifyContent: 'center', alignItems: 'center', display: 'flex', flexWrap: 'wrap' }}>
-            <div className="card card-soft" style={{ height:'200px', width: '300px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', padding: 26 }}>
-              <h4 style={{ margin: '0 0 8px 0' }}>🎯 Career Advice</h4>
-              <p style={{ margin: 0, fontSize: '14px', opacity: 0.9 }}>Share interview tips, resume guidance, and first job experiences that helped you succeed.</p>
-            </div>
-            
-            <div className="card card-soft" style={{ height:'200px', width: '300px', background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white', padding: 26 }}>
-              <h4 style={{ margin: '0 0 8px 0' }}>🏢 Industry Insights</h4>
-              <p style={{ margin: 0, fontSize: '14px', opacity: 0.9 }}>Share latest trends, required skills, and company cultures in your field.</p>
-            </div>
-            
-            <div className="card card-soft" style={{ height:'200px', width: '300px', background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', color: 'white', padding: 26 }}>
-              <h4 style={{ margin: '0 0 8px 0' }}>📚 Learning Resources</h4>
-              <p style={{ margin: 0, fontSize: '14px', opacity: 0.9 }}>Recommend useful courses, books, tools, or certifications that boosted your career.</p>
-            </div>
-            
-            <div className="card card-soft" style={{ height:'200px', width: '300px', background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', color: 'white', padding: 26 }}>
-              <h4 style={{ margin: '0 0 8px 0' }}>🤝 Networking Tips</h4>
-              <p style={{ margin: 0, fontSize: '14px', opacity: 0.9 }}>Share how to build professional connections and leverage your network effectively.</p>
-            </div>
-            
-            <div className="card card-soft" style={{ height:'200px', width: '300px', background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', color: 'white', padding: 26 }}>
-              <h4 style={{ margin: '0 0 8px 0' }}>💪 Personal Stories</h4>
-              <p style={{ margin: 0, fontSize: '14px', opacity: 0.9 }}>Tell about challenges you faced and how you overcame them to inspire others.</p>
-            </div>
-            
-            <div className="card card-soft" style={{ height:'200px', width: '300px', background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)', color: '#333', padding: 26 }}>
-              <h4 style={{ margin: '0 0 8px 0' }}>🌟 Mentorship</h4>
-              <p style={{ margin: 0, fontSize: '14px', opacity: 0.8 }}>Offer guidance sessions, answer questions, or provide one-on-one mentoring.</p>
-            </div>
+        <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+              ✨ Share Your Wisdom & Inspire Others ✨
+            </h3>
+            <p className="text-gray-600 text-sm">Click any card below to start sharing your valuable insights</p>
           </div>
-          <div style={{ textAlign: 'center', fontSize: '13px', fontStyle: 'italic', color: '#666', marginTop: 26 }}>
-            Your experience can make a real difference in someone's career journey! 🚀
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                title: "🎯 Career Advice",
+                description: "Share interview tips, resume guidance, and first job experiences",
+                gradient: "from-indigo-500 via-purple-500 to-purple-600",
+                icon: "💼",
+                prompt: "Share a career advice tip that helped you in your professional journey. Consider topics like: interview preparation, resume building, job searching strategies, or early career decisions."
+              },
+              {
+                title: "🏢 Industry Insights", 
+                description: "Share latest trends, required skills, and company cultures",
+                gradient: "from-pink-500 via-rose-500 to-red-500",
+                icon: "📈",
+                prompt: "What industry trends or insights would you share with students entering your field? Think about: emerging technologies, required skills, market demands, or workplace culture."
+              },
+              {
+                title: "📚 Learning Resources",
+                description: "Recommend courses, books, tools, or certifications",
+                gradient: "from-blue-500 via-cyan-500 to-teal-500",
+                icon: "🎓",
+                prompt: "Recommend a learning resource that significantly impacted your career. This could be a course, book, certification, tool, or platform that helped you grow professionally."
+              },
+              {
+                title: "🤝 Networking Tips",
+                description: "Share how to build professional connections effectively",
+                gradient: "from-green-500 via-emerald-500 to-teal-500",
+                icon: "🌐",
+                prompt: "Share a networking tip or strategy that has worked for you. How do you build and maintain professional relationships? What networking mistakes should students avoid?"
+              },
+              {
+                title: "💪 Personal Stories",
+                description: "Tell about challenges and how you overcame them",
+                gradient: "from-orange-500 via-pink-500 to-red-500",
+                icon: "🌟",
+                prompt: "Share a personal challenge or setback you faced in your career and how you overcame it. Your story could inspire someone facing similar difficulties."
+              },
+              {
+                title: "🌟 Mentorship Offer",
+                description: "Offer guidance sessions or answer questions",
+                gradient: "from-purple-500 via-violet-500 to-pink-500",
+                icon: "🎯",
+                prompt: "Are you available for mentorship or guidance? Share what areas you can help with, your expertise, and how students can connect with you for advice."
+              }
+            ].map((suggestion, index) => (
+              <div
+                key={index}
+                onClick={() => handleSuggestionClick(suggestion)}
+                className={`group relative bg-gradient-to-br ${suggestion.gradient} text-white p-6 rounded-2xl shadow-xl cursor-pointer transform hover:scale-[1.02] hover:shadow-2xl transition-all duration-300 border border-white/20 hover:border-white/40 backdrop-blur-sm overflow-hidden`}
+              >
+                {/* Decorative background pattern */}
+                <div className="absolute inset-0 opacity-10">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full transform translate-x-16 -translate-y-16"></div>
+                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full transform -translate-x-12 translate-y-12"></div>
+                </div>
+                
+                {/* Content */}
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-bold text-xl group-hover:scale-105 transition-transform duration-200">
+                      {suggestion.title}
+                    </h4>
+                    <div className="text-3xl opacity-80 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+                      {suggestion.icon}
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm opacity-90 leading-relaxed mb-4 group-hover:opacity-100 transition-opacity duration-200">
+                    {suggestion.description}
+                  </p>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs opacity-80 italic group-hover:opacity-100 transition-opacity duration-200">
+                      Click to create post
+                    </div>
+                    <div className="text-lg group-hover:translate-x-1 transition-transform duration-200">
+                      →
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Hover glow effect */}
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/0 to-white/0 group-hover:from-white/10 group-hover:to-transparent transition-all duration-300"></div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="text-center mt-8 p-4 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30">
+            <p className="text-gray-700 font-medium">
+              🚀 Your experience can make a real difference in someone's career journey!
+            </p>
+            <p className="text-sm text-gray-600 mt-1">
+              Every shared insight helps build a stronger alumni community
+            </p>
           </div>
         </div>
       )}
