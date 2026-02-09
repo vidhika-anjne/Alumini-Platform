@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
 import PostForm from '../components/PostForm'
 import '../styles.css'
 
 export default function Feed() {
   const [posts, setPosts] = useState([])
-  const [showPostForm, setShowPostForm] = useState(false)
   const [postPrompt, setPostPrompt] = useState('')
   const { userType } = useAuth()
+  const { theme } = useTheme()
 
   const load = async () => {
     const { data } = await api.get('/api/v1/posts')
@@ -27,6 +28,10 @@ export default function Feed() {
 
   return (
     <div className="container bg-neutral-section max-w-4xl p-4 mx-auto rounded-xl">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold">Community Feed</h2>
+      </div>
+
       {userType === 'alumni' && (
         <PostForm 
           onCreated={() => {
@@ -35,7 +40,6 @@ export default function Feed() {
             setPostPrompt('')
           }} 
           initialPrompt={postPrompt}
-          showForm={showPostForm}
           onToggleForm={() => setShowPostForm(!showPostForm)}
         />
       )}
@@ -57,12 +61,20 @@ export default function Feed() {
       </div>
 
       {userType === 'alumni' && (
-        <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl">
+        <div
+          className={`mt-8 p-6 rounded-2xl ${
+            theme === 'dark'
+              ? 'bg-slate-900/60 border border-slate-700'
+              : 'bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50'
+          }`}
+        >
           <div className="text-center mb-8">
             <h3 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
               ✨ Share Your Wisdom & Inspire Others ✨
             </h3>
-            <p className="text-gray-600 text-sm">Click any card below to start sharing your valuable insights</p>
+            <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+              Click any card below to start sharing your valuable insights
+            </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -152,11 +164,17 @@ export default function Feed() {
             ))}
           </div>
           
-          <div className="text-center mt-8 p-4 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30">
-            <p className="text-gray-700 font-medium">
+          <div
+            className={`text-center mt-8 p-4 rounded-xl border backdrop-blur-sm ${
+              theme === 'dark'
+                ? 'bg-slate-900/70 border-slate-700'
+                : 'bg-white/20 border-white/30'
+            }`}
+          >
+            <p className={`${theme === 'dark' ? 'text-gray-100' : 'text-gray-700'} font-medium`}>
               🚀 Your experience can make a real difference in someone's career journey!
             </p>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
               Every shared insight helps build a stronger alumni community
             </p>
           </div>
