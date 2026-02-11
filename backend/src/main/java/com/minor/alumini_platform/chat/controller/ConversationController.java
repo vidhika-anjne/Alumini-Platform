@@ -1,15 +1,17 @@
 package com.minor.alumini_platform.chat.controller;
 
-// package com.minor.alumini_platform.controller;
-
 import com.minor.alumini_platform.chat.model.Conversation;
 import com.minor.alumini_platform.chat.service.ConversationService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * DEPRECATED: Use ConversationRestController instead
+ * This controller is kept for backwards compatibility but should not be used
+ */
 @RestController
-@RequestMapping("/api/v1/conversations")
+@RequestMapping("/api/v1/conversations-legacy")
 public class ConversationController {
 
     private final ConversationService conversationService;

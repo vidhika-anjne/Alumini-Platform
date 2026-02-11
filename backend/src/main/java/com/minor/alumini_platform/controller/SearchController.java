@@ -18,15 +18,26 @@ public class SearchController {
 
     private final SearchService searchService;
 
+    @GetMapping("/test")
+    public ResponseEntity<Map<String, Object>> test() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "Search endpoint is working");
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping
     public ResponseEntity<Map<String, Object>> searchUsers(@RequestParam String query) {
         Map<String, Object> response = new HashMap<>();
+        System.out.println("🔍 SEARCH REQUEST RECEIVED: query=" + query);
         try {
             List<UserSearchResultDTO> results = searchService.searchUsers(query);
+            System.out.println("✅ SEARCH RESULTS: Found " + results.size() + " matches");
             response.put("success", true);
             response.put("results", results);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            System.out.println("❌ SEARCH ERROR: " + e.getMessage());
+            e.printStackTrace();
             response.put("success", false);
             response.put("message", "Search failed: " + e.getMessage());
             return ResponseEntity.internalServerError().body(response);

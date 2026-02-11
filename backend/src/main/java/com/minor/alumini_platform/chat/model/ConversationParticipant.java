@@ -3,12 +3,14 @@ package com.minor.alumini_platform.chat.model;
 // package com.minor.alumini_platform.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import javax.persistence.*;
 
 @Entity
 @Table(name = "conversation_participants", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "conversation_id", "participant_id" })
 })
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ConversationParticipant {
 
     @Id

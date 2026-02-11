@@ -9,12 +9,16 @@ import com.minor.alumini_platform.chat.model.MessageStatus;
 import com.minor.alumini_platform.chat.model.ConversationParticipant;
 import com.minor.alumini_platform.chat.repository.ConversationParticipantRepository;
 import com.minor.alumini_platform.chat.service.MessageService;
+import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
+import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class ChatController {
@@ -32,16 +36,21 @@ public class ChatController {
     }
 
     @MessageMapping("/chat.send")
-    public void sendMessage(@Payload SendMessageRequest request) {
+    public void sendMessage(@Payload SendMessageRequest request, Principal principal) {
+        // Verify the sender matches the authenticated user
+        String authenticatedUser = principal != null ? principal.getName() : null;
+        if (authenticatedUser == null || !authenticatedUser.equals(request.senderId)) {
+            throw new SecurityException("Sender ID mismatch");
+        }
+
         // 1. Save to database
         Message savedMessage = messageService.sendMessage(request);
         MessageResponse response = messageService.toDto(savedMessage);
 
-        // 2. Notify all participants of the conversation
+        // 2. Notify all participants including the sender
         List<ConversationParticipant> participants = participantRepository.findByConversationId(request.conversationId);
         
         for (ConversationParticipant p : participants) {
-            // Client subscribes to /user/queue/messages
             messagingTemplate.convertAndSendToUser(
                 p.getParticipantId(), 
                 "/queue/messages", 
@@ -87,5 +96,11 @@ public class ChatController {
                 );
             }
         } catch (Exception ignored) {}
+    }
+
+    @MessageExceptionHandler
+    @SendToUser("/queue/errors")
+    public Map<String, String> handleException(Throwable exception) {
+        return Map.of("error", exception.getMessage());
     }
 }

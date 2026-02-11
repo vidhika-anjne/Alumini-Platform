@@ -1,6 +1,6 @@
 package com.minor.alumini_platform.chat.controller;
 
-// package com.minor.alumini_platform.controller;
+// DEPRECATED: Use ParticipantRestController instead
 
 import com.minor.alumini_platform.chat.model.Conversation;
 import com.minor.alumini_platform.chat.model.ConversationParticipant;
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/participants")
+@RequestMapping("/api/v1/participants-legacy")
 public class ConversationParticipantController {
 
     private final ConversationParticipantService participantService;

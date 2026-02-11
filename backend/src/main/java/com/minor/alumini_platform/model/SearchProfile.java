@@ -1,5 +1,6 @@
 package com.minor.alumini_platform.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.minor.alumini_platform.enums.UserType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,6 +15,7 @@ import javax.persistence.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class SearchProfile {
 
     @Id
@@ -27,6 +29,10 @@ public class SearchProfile {
     // enrollmentNumber can be used as unique reference or the primary ID
     @Column(nullable = false)
     private String enrollmentNumber;
+
+    // Added for quick search results
+    private String name;
+    private String avatarUrl;
 
     // ---- What will be embedded ----
     @Column(length = 3000)
@@ -43,5 +49,6 @@ public class SearchProfile {
     private String jobTitle;
 
     @Column(columnDefinition = "boolean default true")
+    @Builder.Default
     private boolean active = true;
 }

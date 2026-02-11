@@ -15,4 +15,7 @@ public class UserSearchResultDTO {
     private String type; // "STUDENT" or "ALUMNI"
     private String department;
     private String email;
+    private String avatarUrl;
+    private String currentCompany;
+    private String jobTitle;
 }

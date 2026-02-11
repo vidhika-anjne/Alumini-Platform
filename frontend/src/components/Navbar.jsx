@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { useState, useEffect } from 'react'
 import api from '../api/client'
+import SearchField from './SearchField'
 import logo from '../images/White-Logos-for-Acropolis.png'
 
 export default function Navbar() {
@@ -81,6 +82,7 @@ export default function Navbar() {
         {!token && <NavLink to="/login" className={({ isActive }) => isActive ? 'active' : ''}>Login</NavLink>}
         {!token && <NavLink to="/register" className={({ isActive }) => isActive ? 'active' : ''}>Register</NavLink>}
       </nav>
+      {token && <SearchField />}
       <div className="actions">
         <button className="icon-btn" onClick={toggle} title="Toggle theme">{theme === 'light' ? '🌙' : '☀️'}</button>
         {token && (
@@ -90,7 +92,7 @@ export default function Navbar() {
             ) : (
               <div className="avatar" aria-label="User avatar">{avatar}</div>
             )}
-            <div className="user-info" Link to="/profile">
+            <div className="user-info" onClick={() => nav('/profile')} style={{ cursor: 'pointer' }}>
               <div className="user-name">{user?.name || user?.enrollmentNumber}</div>
               <div className="user-role small">{userType}</div>
             </div>

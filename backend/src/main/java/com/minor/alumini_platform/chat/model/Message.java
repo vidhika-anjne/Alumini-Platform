@@ -2,11 +2,13 @@ package com.minor.alumini_platform.chat.model;
 
 // package com.minor.alumini_platform.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "messages")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Message {
 
     @Id
@@ -28,7 +30,7 @@ public class Message {
     @Enumerated(EnumType.STRING)
     private MessageStatus status = MessageStatus.SENT;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "conversation_id", nullable = false)
     private Conversation conversation;
 

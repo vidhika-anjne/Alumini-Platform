@@ -3,6 +3,7 @@ package com.minor.alumini_platform.model;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.minor.alumini_platform.enums.EmploymentStatus;
 
@@ -10,6 +11,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "alumni")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Alumni {
 
     @Id

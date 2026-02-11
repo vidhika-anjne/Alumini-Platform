@@ -1,6 +1,5 @@
 package com.minor.alumini_platform.controller;
-
-import com.minor.alumini_platform.model.Connection;
+import com.minor.alumini_platform.dto.ConnectedUserDTO;import com.minor.alumini_platform.model.Connection;
 import com.minor.alumini_platform.service.ConnectionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -75,6 +74,11 @@ public class ConnectionController {
     @GetMapping("/mine")
     public ResponseEntity<List<Connection>> getMyConnections(Principal principal) {
         return ResponseEntity.ok(connectionService.getMyConnections(principal.getName()));
+    }
+
+    @GetMapping("/mine/users")
+    public ResponseEntity<List<ConnectedUserDTO>> getMyConnectedUsers(Principal principal) {
+        return ResponseEntity.ok(connectionService.getConnectedUsers(principal.getName()));
     }
     
     @GetMapping("/status/{otherUserId}")

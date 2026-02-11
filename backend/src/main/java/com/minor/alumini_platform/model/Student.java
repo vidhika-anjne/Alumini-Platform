@@ -1,5 +1,6 @@
 package com.minor.alumini_platform.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import javax.persistence.*;
 
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ import com.minor.alumini_platform.enums.AlumniDecisionStatus;
 
 @Entity
 @Table(name = "students")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Student {
 
     @Id

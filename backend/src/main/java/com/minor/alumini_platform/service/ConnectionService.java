@@ -1,9 +1,11 @@
 package com.minor.alumini_platform.service;
 
+import com.minor.alumini_platform.dto.ConnectedUserDTO;
 import com.minor.alumini_platform.enums.ConnectionStatus;
 import com.minor.alumini_platform.model.Connection;
 import com.minor.alumini_platform.repository.AlumniRepository;
 import com.minor.alumini_platform.repository.ConnectionRepository;
+import com.minor.alumini_platform.repository.SearchProfileRepository;
 import com.minor.alumini_platform.repository.StudentRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -23,13 +25,16 @@ public class ConnectionService {
     private final ConnectionRepository connectionRepository;
     private final AlumniRepository alumniRepository;
     private final StudentRepository studentRepository;
+    private final SearchProfileRepository searchProfileRepository;
 
     public ConnectionService(ConnectionRepository connectionRepository,
                              AlumniRepository alumniRepository,
-                             StudentRepository studentRepository) {
+                             StudentRepository studentRepository,
+                             SearchProfileRepository searchProfileRepository) {
         this.connectionRepository = connectionRepository;
         this.alumniRepository = alumniRepository;
         this.studentRepository = studentRepository;
+        this.searchProfileRepository = searchProfileRepository;
     }
 
     @Transactional
@@ -109,5 +114,15 @@ public class ConnectionService {
     @Cacheable(value = "userConnections", key = "#userId")
     public List<Connection> getMyConnections(String userId) {
         return connectionRepository.findAllAcceptedForUser(userId);
+    }
+
+    public List<ConnectedUserDTO> getConnectedUsers(String userId) {
+        List<Connection> connections = connectionRepository.findAllAcceptedForUser(userId);
+        return connections.stream().map(c -> {
+            String otherId = c.getRequesterId().equals(userId) ? c.getReceiverId() : c.getRequesterId();
+            return searchProfileRepository.findByEnrollmentNumber(otherId)
+                    .map(p -> new ConnectedUserDTO(p.getEnrollmentNumber(), p.getName(), p.getUserType(), p.getAvatarUrl()))
+                    .orElse(new ConnectedUserDTO(otherId, "Unknown User", null, null));
+        }).collect(Collectors.toList());
     }
 }

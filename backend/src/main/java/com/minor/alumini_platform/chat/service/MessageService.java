@@ -8,8 +8,10 @@ import com.minor.alumini_platform.service.ConnectionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,16 +68,37 @@ public class MessageService {
         m.setSenderId(req.senderId);
         m.setContent(req.content);
         m.setMediaUrl(req.mediaUrl);
+        m.setSentAt(LocalDateTime.now());
+        m.setStatus(MessageStatus.SENT);
 
-        return messageRepository.save(m);
+        Message saved = messageRepository.save(m);
+        System.out.println("💾 Message saved to database: id=" + saved.getId() + ", conversationId=" + saved.getConversation().getId() + ", sender=" + saved.getSenderId());
+        return saved;
     }
 
+    @Transactional(readOnly = true)
     public List<MessageResponse> getMessages(Long conversationId, int page, int size) {
+        System.out.println("🔍 MessageService: Looking up conversation " + conversationId);
         conversationRepository.findById(conversationId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversation not found"));
 
+        // Count total messages for this conversation
+        long totalCount = messageRepository.countByConversationId(conversationId);
+        System.out.println("🔍 MessageService: Total message count in DB for conversation " + conversationId + ": " + totalCount);
+
+        System.out.println("🔍 MessageService: Querying messages for conversation " + conversationId + " (page=" + page + ", size=" + size + ")");
         List<Message> messages = messageRepository.findByConversationIdOrderBySentAtAsc(conversationId, PageRequest.of(page, size));
-        return messages.stream().map(this::toDto).collect(Collectors.toList());
+        System.out.println("🔍 MessageService: Found " + messages.size() + " messages in database");
+        
+        // Log each message
+        for (int i = 0; i < messages.size(); i++) {
+            Message m = messages.get(i);
+            System.out.println("  Message " + (i+1) + ": id=" + m.getId() + ", sender=" + m.getSenderId() + ", content=" + (m.getContent() != null ? m.getContent().substring(0, Math.min(20, m.getContent().length())) : "null") + "...");
+        }
+        
+        List<MessageResponse> result = messages.stream().map(this::toDto).collect(Collectors.toList());
+        System.out.println("🔍 MessageService: Mapped to " + result.size() + " DTOs");
+        return result;
     }
 
     public Message updateStatus(Long messageId, MessageStatus status) {

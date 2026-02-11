@@ -42,6 +42,8 @@ public class SecurityConfig {
           .antMatchers("/api/v1/otp/**").permitAll()
           .antMatchers("/api/v1/auth/**").permitAll()
           .antMatchers(HttpMethod.GET, "/api/v1/posts").permitAll()
+          .antMatchers(HttpMethod.GET, "/api/v1/search").permitAll()
+          .antMatchers("/ws-chat/**").permitAll()
           .antMatchers("/api/auth/**", "/api/public/**").permitAll()
           .antMatchers("/api/v1/**").authenticated()
           .anyRequest().authenticated()

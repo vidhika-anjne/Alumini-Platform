@@ -1,5 +1,6 @@
 package com.minor.alumini_platform.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.minor.alumini_platform.enums.ConnectionStatus;
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -8,6 +9,7 @@ import java.time.LocalDateTime;
 @Table(name = "connections", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"requester_id", "receiver_id"})
 })
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Connection {
 
     @Id

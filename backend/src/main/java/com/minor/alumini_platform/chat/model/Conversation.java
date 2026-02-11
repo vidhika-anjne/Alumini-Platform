@@ -1,5 +1,6 @@
 package com.minor.alumini_platform.chat.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -8,6 +9,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "conversations")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Conversation {
 
     @Id
@@ -23,7 +25,7 @@ public class Conversation {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     //link to participants
-    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<ConversationParticipant> participants = new ArrayList<>();
 

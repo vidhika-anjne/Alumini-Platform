@@ -33,6 +33,8 @@ public class SearchProfileService {
 
             profile.setEnrollmentNumber(enrollmentNumber);
             profile.setUserType(UserType.ALUMNI);
+            profile.setName(alumni.getName());
+            profile.setAvatarUrl(alumni.getAvatarUrl());
             profile.setSearchableText(searchProfileBuilder.buildForAlumni(alumni));
             profile.setDepartment(alumni.getDepartment());
             if (alumni.getPassingYear() != null && !alumni.getPassingYear().isEmpty()) {
@@ -66,6 +68,8 @@ public class SearchProfileService {
 
             profile.setEnrollmentNumber(enrollmentNumber);
             profile.setUserType(UserType.STUDENT);
+            profile.setName(student.getName());
+            profile.setAvatarUrl(student.getAvatarUrl());
             profile.setSearchableText(searchProfileBuilder.buildForStudent(student));
             profile.setDepartment(student.getDepartment());
             profile.setPassingYear(student.getPassingYear());

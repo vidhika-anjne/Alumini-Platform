@@ -3,6 +3,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Feed from './pages/Feed'
 import Profile from './pages/Profile'
+import PublicProfile from './pages/PublicProfile'
 import Chat from './pages/Chat'
 import Mentors from './pages/Mentors'
 import Dashboard from './pages/Dashboard'
@@ -44,6 +45,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile/:type/:enrollmentNumber"
+              element={
+                <ProtectedRoute>
+                  <PublicProfile />
                 </ProtectedRoute>
               }
             />
