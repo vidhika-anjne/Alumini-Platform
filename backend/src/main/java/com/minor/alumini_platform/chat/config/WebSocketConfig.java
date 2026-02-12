@@ -48,7 +48,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-chat")
-                .setAllowedOrigins("http://localhost:3000", "http://127.0.0.1:3000")
+                .setAllowedOrigins("http://localhost:3000", "http://127.0.0.1:3000","http://localhost:5173", "http://127.0.0.1:5173")
                 .addInterceptors(new HandshakeInterceptor() {
                     @Override
                     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {

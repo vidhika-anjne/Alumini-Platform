@@ -37,6 +37,7 @@ public class SecurityConfig {
         .and()
         .authorizeRequests()
           .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+          .antMatchers("/", "/health").permitAll()
           .antMatchers("/api/v1/alumni/register", "/api/v1/alumni/login").permitAll()
           .antMatchers("/api/v1/students/register", "/api/v1/students/login").permitAll()
           .antMatchers("/api/v1/otp/**").permitAll()

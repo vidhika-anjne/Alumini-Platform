@@ -35,7 +35,16 @@ export default function PostForm({ onCreated, initialPrompt = "" }) {
       setFile(null);
       onCreated?.(data);
     } catch (err) {
-      setError(err?.response?.data || "Failed to create post");
+      const backendData = err?.response?.data;
+      let message = "Failed to create post";
+
+      if (typeof backendData === "string") {
+        message = backendData;
+      } else if (backendData && typeof backendData === "object") {
+        message = backendData.message || backendData.error || message;
+      }
+
+      setError(message);
     } finally {
       setLoading(false);
     }
