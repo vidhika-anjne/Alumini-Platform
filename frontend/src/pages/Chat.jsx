@@ -260,7 +260,7 @@ export default function Chat() {
     
     console.log('🔗 Starting conversation with:', targetUser.userId)
     try {
-      const { data: conv } = await api.post(`/api/v1/conversations/private/${encodeURIComponent(targetUser.userId)}`)
+      const { data: conv } = await api.post(`/api/v1/conversations/private/${targetId}`)
       console.log('✅ Conversation ready:', conv)
       
       // Refresh conversations list
@@ -284,6 +284,31 @@ export default function Chat() {
     u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.userId?.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  const visibleConversations = useMemo(() => {
+    const deduped = new Map()
+    conversations.forEach((conv) => {
+      const other = conv.participants?.find((p) => String(p.participantId) !== String(currentId))
+      const key = other?.participantId || other?.userId || conv.id
+      const existing = deduped.get(key)
+      if (!existing) {
+        deduped.set(key, conv)
+        return
+      }
+
+      const convTime = new Date(conv.lastMessage?.sentAt || conv.createdAt).getTime()
+      const existingTime = new Date(existing.lastMessage?.sentAt || existing.createdAt).getTime()
+      if (convTime > existingTime) {
+        deduped.set(key, conv)
+      }
+    })
+
+    return Array.from(deduped.values()).sort((a, b) => {
+      const aTime = new Date(a.lastMessage?.sentAt || a.createdAt)
+      const bTime = new Date(b.lastMessage?.sentAt || b.createdAt)
+      return bTime - aTime
+    })
+  }, [conversations, currentId])
 
   const getOtherParticipant = (conv) => {
     return conv.participants?.find(p => p.participantId !== currentId) || {}
@@ -380,12 +405,12 @@ export default function Chat() {
         {/* Conversations List */}
         {!searchQuery && (
           <div className="conversations-list">
-            {conversations.length === 0 ? (
+            {visibleConversations.length === 0 ? (
               <div className="empty-state">
                 No conversations yet. Search above to start chatting!
               </div>
             ) : (
-              conversations.map((conv) => {
+              visibleConversations.map((conv) => {
                 const other = getOtherParticipant(conv)
                 const isSelected = selectedConv?.id === conv.id
                 

@@ -13,13 +13,17 @@ export default function Feed() {
 
   const load = async () => {
     const { data } = await api.get('/api/v1/posts')
-    const items = Array.isArray(data?.content) ? data.content : []
+    // Backend returns a plain List<Post>, not a paginated "content" field
+    const items = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.content)
+        ? data.content
+        : []
     setPosts(items)
   }
 
   const handleSuggestionClick = (suggestion) => {
     setPostPrompt(suggestion.prompt)
-    setShowPostForm(true)
     // Scroll to top where post form is located
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -36,11 +40,9 @@ export default function Feed() {
         <PostForm 
           onCreated={() => {
             load()
-            setShowPostForm(false)
             setPostPrompt('')
           }} 
           initialPrompt={postPrompt}
-          onToggleForm={() => setShowPostForm(!showPostForm)}
         />
       )}
       

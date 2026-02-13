@@ -7,10 +7,10 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token')
-    console.log('API Request Interceptor:')
-    console.log('- URL:', config.url)
-    console.log('- Method:', config.method)
-    console.log('- Token from localStorage:', token ? `${token.substring(0, 20)}...` : 'null')
+    // console.log('API Request Interceptor:')
+    // console.log('- URL:', config.url)
+    // console.log('- Method:', config.method)
+    // console.log('- Token from localStorage:', token ? `${token.substring(0, 20)}...` : 'null')
     
     if (token && token.trim() !== '') {
       config.headers.Authorization = `Bearer ${token}`
@@ -32,10 +32,10 @@ api.interceptors.response.use(
     return response
   },
   (error) => {
-    console.error('API Response Error:')
-    console.error('- Status:', error.response?.status)
-    console.error('- Data:', error.response?.data)
-    console.error('- Headers:', error.response?.headers)
+  //   console.error('API Response Error:')
+  //   console.error('- Status:', error.response?.status)
+  //   console.error('- Data:', error.response?.data)
+  //   console.error('- Headers:', error.response?.headers)
     
     if (error.response?.status === 401) {
       console.warn('Unauthorized request - token may be invalid or expired')

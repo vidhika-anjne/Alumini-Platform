@@ -51,10 +51,16 @@ export default function Mentors() {
     setLoading(true)
     setError('')
     try {
+      // Require authentication before calling the protected API
+      if (!token) {
+        setResults([])
+        setError('Please log in to view mentors')
+        return
+      }
       // Debug authentication
-      console.log('Token:', token)
-      console.log('User:', user)
-      console.log('Making request to /api/v1/alumni')
+      // console.log('Token:', token)
+      // console.log('User:', user)
+      // console.log('Making request to /api/v1/alumni')
       
       const { data } = await api.get('/api/v1/alumni')
       console.log('Response received:', data)
@@ -104,11 +110,11 @@ export default function Mentors() {
         setConnectionStatus(statusMap)
       }
     } catch (e) {
-      console.error('Error fetching mentors:', e)
-      console.error('Error response:', e.response)
-      console.error('Error status:', e.response?.status)
-      console.error('Error data:', e.response?.data)
-      console.error('Request headers:', e.config?.headers)
+    //   console.error('Error fetching mentors:', e)
+    //   console.error('Error response:', e.response)
+    //   console.error('Error status:', e.response?.status)
+    //   console.error('Error data:', e.response?.data)
+    //   console.error('Request headers:', e.config?.headers)
       setError(e?.response?.data?.message || 'Failed to load mentors')
     } finally { setLoading(false) }
   }
@@ -199,9 +205,9 @@ export default function Mentors() {
   return (
     <div className="container">
       <AuthDebug />
-      <h2>Find Mentors</h2>
+      <h2>Filters</h2>
       <div className="card" style={{ display: 'grid', gap: 8, gridTemplateColumns: 'repeat(6, 1fr)' }}>
-        <input className="input" placeholder="Name" value={filters.name} onChange={(e) => setFilters({ ...filters, name: e.target.value })} />
+        {/* <input className="input" placeholder="Name" value={filters.name} onChange={(e) => setFilters({ ...filters, name: e.target.value })} /> */}
         <input className="input" placeholder="Department" value={filters.department} onChange={(e) => setFilters({ ...filters, department: e.target.value })} />
         <input className="input" placeholder="Passing Year" value={filters.passingYear} onChange={(e) => setFilters({ ...filters, passingYear: e.target.value })} />
         <select className="select" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
@@ -217,9 +223,9 @@ export default function Mentors() {
         </select>
         <input className="input" placeholder="Company" value={filters.company} onChange={(e) => setFilters({ ...filters, company: e.target.value })} />
         <input className="input" placeholder="Job Title" value={filters.jobTitle} onChange={(e) => setFilters({ ...filters, jobTitle: e.target.value })} />
-        <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 8, alignItems: 'center' }}>
+        {/* <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 8, alignItems: 'center' }}> */}
           <button className="button" onClick={() => fetchMentors()} disabled={loading}>{loading ? 'Searching…' : 'Search'}</button>
-        </div>
+        {/* </div> */}
       </div>
      
 
