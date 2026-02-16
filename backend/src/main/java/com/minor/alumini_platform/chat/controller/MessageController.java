@@ -8,6 +8,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * REST controller for message operations.
+ * Note: Message history endpoint is handled by ConversationRestController for better organization
+ */
 @RestController
 @RequestMapping("/api/v1")
 public class MessageController {
@@ -17,19 +21,11 @@ public class MessageController {
         this.messageService = messageService;
     }
 
-    // send message (REST)
+    // send message (REST) - primarily used for non-WebSocket clients
     @PostMapping("/messages")
     public MessageResponse sendMessage(@RequestBody SendMessageRequest req) {
         Message saved = messageService.sendMessage(req);
-        return messageService.toDto(saved); // if you make toDto public OR return saved mapped
-    }
-
-    // fetch history with pagination
-    @GetMapping("/conversations/{conversationId}/messages")
-    public List<MessageResponse> getMessages(
-            @PathVariable Long conversationId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size) {
-        return messageService.getMessages(conversationId, page, size);
+        return messageService.toDto(saved);
     }
 }
+
