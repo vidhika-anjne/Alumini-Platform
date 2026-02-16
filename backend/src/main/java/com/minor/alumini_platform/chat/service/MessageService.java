@@ -101,6 +101,52 @@ public class MessageService {
         return result;
     }
 
+    /**
+     * Fetches messages with cursor-based pagination for WhatsApp-style infinite scroll.
+     * 
+     * Contract:
+     * - If cursor is null: returns the LATEST 'limit' messages (newest ones)
+     * - If cursor is provided: returns 'limit' messages OLDER than the cursor (id < cursor)
+     * - Messages are ALWAYS returned in chronological order (oldest → newest by ID)
+     * - Cursor message itself is EXCLUDED to prevent duplicates
+     * 
+     * @param conversationId The conversation to fetch messages from
+     * @param cursor The message ID to fetch older messages from (null for initial load)
+     * @param limit Maximum number of messages to return
+     * @return List of messages in ascending order (oldest first)
+     */
+    @Transactional(readOnly = true)
+    public List<MessageResponse> getMessagesWithCursor(Long conversationId, Long cursor, int limit) {
+        System.out.println("DEBUG getMessagesWithCursor: convId=" + conversationId + ", cursor=" + cursor + ", limit=" + limit);
+        
+        List<Message> messages;
+        if (cursor == null || cursor == 0) {
+            System.out.println("DEBUG: Fetching LATEST messages (initial load)");
+            messages = messageRepository.findLatestMessages(conversationId, PageRequest.of(0, limit));
+        } else {
+            System.out.println("DEBUG: Fetching OLDER messages (before cursor " + cursor + ")");
+            messages = messageRepository.findOlderMessages(conversationId, cursor, PageRequest.of(0, limit));
+        }
+        
+        System.out.println("DEBUG: Found " + messages.size() + " messages in DB");
+        if (!messages.isEmpty()) {
+            System.out.println("DEBUG: Raw from DB - First id=" + messages.get(0).getId() + ", Last id=" + messages.get(messages.size()-1).getId());
+        }
+        
+        // Sort by ID ascending to ensure strict chronological order (oldest → newest)
+        // This is critical for frontend prepend logic and cursor-based pagination
+        List<MessageResponse> result = messages.stream()
+            .sorted((m1, m2) -> m1.getId().compareTo(m2.getId()))
+            .map(this::toDto)
+            .collect(Collectors.toList());
+        
+        if (!result.isEmpty()) {
+            System.out.println("DEBUG: After sorting - First id=" + result.get(0).id + ", Last id=" + result.get(result.size()-1).id);
+        }
+        System.out.println("DEBUG: Returning " + result.size() + " DTOs in ascending order");
+        return result;
+    }
+
     public Message updateStatus(Long messageId, MessageStatus status) {
         Message m = messageRepository.findById(messageId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Message not found"));

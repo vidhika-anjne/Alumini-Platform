@@ -1,9 +1,27 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import api from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import SockJS from 'sockjs-client'
 import { Client } from '@stomp/stompjs'
 import './Chat.css'
+
+// Helper for date headers like WhatsApp
+const formatDateDivider = (dateString) => {
+  const d = new Date(dateString)
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+
+  if (d.toDateString() === today.toDateString()) return 'Today'
+  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday'
+  
+  return d.toLocaleDateString(undefined, { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  })
+}
 
 export default function Chat() {
   const { token, user } = useAuth()
@@ -19,15 +37,128 @@ export default function Chat() {
   const [typingMap, setTypingMap] = useState({})
   const [chatError, setChatError] = useState('')
   const [isConnected, setIsConnected] = useState(false)
-  const [isLoadingChat, setIsLoadingChat] = useState(false)
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
 
   const stompRef = useRef(null)
   const typingTimer = useRef(null)
   const messagesEndRef = useRef(null)
+  const observer = useRef()
 
-  // Auto-scroll to bottom when new messages arrive
+  // Last message cursor for infinite scroll
+  const oldestMessageId = useMemo(() => {
+    const id = messages[0]?.id;
+    console.log('DEBUG: oldestMessageId calculated as:', id);
+    return id;
+  }, [messages])
+
+  // Group messages by date
+  const groupedMessages = useMemo(() => {
+    console.log('DEBUG: Grouping', messages.length, 'messages');
+    const groups = {}
+    messages.forEach(m => {
+      const date = new Date(m.sentAt).toDateString()
+      if (!groups[date]) groups[date] = []
+      groups[date].push(m)
+    })
+    console.log('DEBUG: Created', Object.keys(groups).length, 'date groups');
+    return groups
+  }, [messages])
+
+  // Infinite scroll observer
+  const lastMessageElementRef = useCallback(node => {
+    if (isLoadingMessages) {
+      console.log('DEBUG: Not attaching observer - already loading');
+      return;
+    }
+    
+    if (observer.current) {
+      observer.current.disconnect();
+    }
+    
+    observer.current = new IntersectionObserver(entries => {
+      console.log('DEBUG: IntersectionObserver triggered, entry intersecting:', entries[0].isIntersecting, 'hasMore:', hasMore);
+      if (entries[0].isIntersecting && hasMore && !isLoadingMessages) {
+        console.log('👀 Oldest message is visible! Loading more...');
+        loadMoreMessages()
+      }
+    }, {
+      root: null, // Use viewport instead of .messages-area for more reliable detection
+      rootMargin: '100px', // Trigger slightly before the element is fully visible
+      threshold: 0.1
+    })
+    
+    if (node) {
+      console.log('DEBUG: Attached observer to oldest message element');
+      observer.current.observe(node);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingMessages, hasMore, oldestMessageId]) // Re-run when these change
+
+  const loadMoreMessages = () => {
+    if (!selectedConv || isLoadingMessages || !hasMore) {
+      console.log('DEBUG: loadMoreMessages blocked - conv:', !!selectedConv, 'loading:', isLoadingMessages, 'hasMore:', hasMore);
+      return;
+    }
+    
+    // Check if we actually have a cursor
+    if (!oldestMessageId) {
+      console.log('DEBUG: No cursor available yet, skipping load');
+      return;
+    }
+
+    console.log('🔄 loadMoreMessages triggered! cursor:', oldestMessageId);
+    
+    setIsLoadingMessages(true)
+    api.get(`/api/v1/conversations/${selectedConv.id}/messages`, {
+      params: { cursor: oldestMessageId, limit: 20 }
+    })
+    .then(res => {
+      console.log('✅ loadMoreMessages success! received:', res.data?.length || 0, 'messages');
+      
+      if (!res.data || res.data.length === 0) {
+        console.log('🏁 No more older messages found.');
+        setHasMore(false);
+        setIsLoadingMessages(false);
+        return;
+      }
+
+      if (res.data.length < 20) {
+        console.log('🏁 Reached oldest message in history.');
+        setHasMore(false);
+      }
+
+      // Verify no duplicates before prepending
+      setMessages(prev => {
+        const existingIds = new Set(prev.map(m => m.id));
+        const newMessages = res.data.filter(m => !existingIds.has(m.id));
+        console.log('DEBUG: Prepending', newMessages.length, 'unique messages (filtered', res.data.length - newMessages.length, 'duplicates)');
+        return [...newMessages, ...prev];
+      });
+      
+      setIsLoadingMessages(false)
+    })
+    .catch(err => {
+      console.error("❌ Failed to load more messages:", err.response?.data || err.message)
+      // On error, stop trying to load more to prevent infinite retries
+      setHasMore(false);
+      setIsLoadingMessages(false)
+    })
+  }
+
+  // Auto-scroll to bottom when new messages arrive (only if it's a new message, not history)
+  const prevMessagesLength = useRef(messages.length)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messages.length > prevMessagesLength.current) {
+        // Only scroll if the last message is new (not loading history)
+        const lastMsg = messages[messages.length - 1]
+        const secondToLastMsg = messages[messages.length - 2]
+        
+        if (!secondToLastMsg || lastMsg.id > secondToLastMsg.id) {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        }
+    }
+    prevMessagesLength.current = messages.length
   }, [messages])
 
   // Load user's conversations on mount
@@ -60,38 +191,49 @@ export default function Chat() {
   // Fetch message history when selecting a conversation
   useEffect(() => {
     if (!selectedConv) {
-      console.log('⚠️ No conversation selected, clearing messages')
+      console.log('DEBUG: No conversation selected, clearing messages');
       setMessages([])
+      setHasMore(true) // Reset for next conversation
       return
     }
     
-    console.log('📥 Fetching message history for conversation:', selectedConv.id)
-    console.log('📥 Full conversation object:', selectedConv)
-    setMessages([]) // Clear previous messages first
+    console.log('DEBUG: Loading messages for conversation:', selectedConv.id);
+    setMessages([]) 
+    setHasMore(true)
+    setIsLoadingMessages(true)
     
-    const url = `/api/v1/conversations/${selectedConv.id}/messages`
-    console.log('📥 Calling API:', url, 'with params:', { page: 0, size: 100 })
-    
-    api
-      .get(url, { params: { page: 0, size: 100 } })
-      .then((res) => {
-        console.log('✅ Messages loaded:', res.data?.length || 0, 'messages')
-        console.log('📊 Full message array:', res.data)
-        if (res.data && res.data.length > 0) {
-          res.data.forEach((msg, idx) => {
-            console.log(`  Message ${idx+1}:`, msg.id, msg.senderId, msg.content?.substring(0, 30))
-          })
+    api.get(`/api/v1/conversations/${selectedConv.id}/messages`, { 
+        params: { limit: 20 } 
+    })
+    .then((res) => {
+      console.log('DEBUG: Initial load received', res.data?.length || 0, 'messages');
+      if (res.data && res.data.length > 0) {
+        console.log('DEBUG: First msg id:', res.data[0].id, 'Last msg id:', res.data[res.data.length-1].id);
+        console.log('DEBUG: Verifying order - messages should be oldest→newest');
+      }
+      
+      const messages = res.data || [];
+      // Verify messages are in ascending order (oldest → newest)
+      if (messages.length > 1) {
+        const isOrdered = messages.every((msg, idx) => 
+          idx === 0 || messages[idx - 1].id < msg.id
+        );
+        if (!isOrdered) {
+          console.warn('⚠️ Messages NOT in ascending order! Sorting...');
+          messages.sort((a, b) => a.id - b.id);
         }
-        setMessages(res.data || [])
-        console.log('📊 Messages state updated, length:', res.data?.length || 0)
-      })
-      .catch((err) => {
-        console.error('❌ Failed to load messages for conversation', selectedConv.id)
-        console.error('❌ Error status:', err?.response?.status)
-        console.error('❌ Error data:', err?.response?.data)
-        console.error('❌ Error message:', err.message)
-        setMessages([])
-      })
+      }
+      
+      setMessages(messages)
+      if (messages.length < 20) setHasMore(false)
+      setIsLoadingMessages(false)
+    })
+    .catch((err) => {
+      console.error('❌ Failed to load messages:', err.response?.data || err.message)
+      setMessages([])
+      setHasMore(false) // Don't attempt to load more on error
+      setIsLoadingMessages(false)
+    })
   }, [selectedConv])
 
   // Connect to WebSocket when a conversation is selected
@@ -116,13 +258,31 @@ export default function Chat() {
             console.log('📨 Received message:', frame.body)
             const msg = JSON.parse(frame.body)
             if (msg.conversationId === selectedConv.id) {
-              // Prevent duplicates - only add if message doesn't exist
+              // Prevent duplicates - check by ID or match optimistic messages
               setMessages((prev) => {
-                const exists = prev.some(m => m.id === msg.id)
-                if (exists) {
-                  console.log('⚠️ Message already exists, skipping:', msg.id)
+                // Check if message with this ID already exists
+                const existsById = prev.some(m => m.id === msg.id)
+                if (existsById) {
+                  console.log('⚠️ Message already exists by ID, skipping:', msg.id)
                   return prev
                 }
+                
+                // Check for optimistic message (same sender, content, within last 5 seconds)
+                const now = new Date();
+                const optimisticIdx = prev.findIndex(m => 
+                  !m.id && // Optimistic messages don't have server IDs yet
+                  m.senderId === msg.senderId && 
+                  m.content === msg.content &&
+                  (now - new Date(m.sentAt)) < 5000
+                );
+                
+                if (optimisticIdx !== -1) {
+                  console.log('🔄 Replacing optimistic message with server-confirmed message:', msg.id);
+                  const updated = [...prev];
+                  updated[optimisticIdx] = msg;
+                  return updated;
+                }
+                
                 console.log('➕ Adding new message to UI:', msg.id)
                 return [...prev, msg]
               })
@@ -260,7 +420,7 @@ export default function Chat() {
     
     console.log('🔗 Starting conversation with:', targetUser.userId)
     try {
-      const { data: conv } = await api.post(`/api/v1/conversations/private/${targetId}`)
+      const { data: conv } = await api.post(`/api/v1/conversations/private/${targetUser.userId}`)
       console.log('✅ Conversation ready:', conv)
       
       // Refresh conversations list
@@ -499,42 +659,59 @@ export default function Chat() {
 
             {/* Messages Area */}
             <div className="messages-area">
-              {messages.length === 0 ? (
+              {isLoadingMessages && <div className="loading-older">Loading older messages...</div>}
+              
+              {messages.length === 0 && !isLoadingMessages ? (
                 <div className="empty-chat">
                   <div className="empty-icon">💬</div>
                   <p>No messages yet. Start the conversation!</p>
                 </div>
               ) : (
-                messages.map((m, idx) => {
-                  const isMe = String(m.senderId) === String(currentId)
-                  const showAvatar = !isMe && (idx === 0 || messages[idx - 1].senderId !== m.senderId)
-                  const other = getOtherParticipant(selectedConv)
-                  
-                  return (
-                    <div key={m.id} className={`message-row ${isMe ? 'me' : 'them'}`}>
-                      {showAvatar && !isMe && (
-                        <div className="message-avatar-small">
-                          {other.avatarUrl ? (
-                            <img src={other.avatarUrl} alt="" />
-                          ) : (
-                            <div className="avatar-placeholder-small">
-                              {other.name?.charAt(0) || '?'}
+                Object.keys(groupedMessages).map((date, dateIdx) => (
+                  <div key={date}>
+                    <div className="date-divider">
+                      <span className="date-divider-text">{formatDateDivider(date)}</span>
+                    </div>
+
+                    {groupedMessages[date].map((m, idx) => {
+                      const isMe = String(m.senderId) === String(currentId)
+                      const showAvatar = !isMe && (idx === 0 || groupedMessages[date][idx - 1].senderId !== m.senderId)
+                      const other = getOtherParticipant(selectedConv)
+                      
+                      // Attach observer to the very first message ever shown
+                      const isFirstOverall = dateIdx === 0 && idx === 0
+
+                      return (
+                        <div 
+                          key={m.id} 
+                          ref={isFirstOverall ? lastMessageElementRef : null}
+                          className={`message-row ${isMe ? 'me' : 'them'}`}
+                        >
+                          {showAvatar && !isMe && (
+                            <div className="message-avatar-small">
+                              {other.avatarUrl ? (
+                                <img src={other.avatarUrl} alt="" />
+                              ) : (
+                                <div className="avatar-placeholder-small">
+                                  {other.name?.charAt(0) || '?'}
+                                </div>
+                              )}
                             </div>
                           )}
+                          {!showAvatar && !isMe && <div className="message-avatar-spacer" />}
+                          
+                          <div className={`message-bubble ${isMe ? 'my-message' : 'their-message'}`}>
+                            <div className="message-content">{m.content}</div>
+                            <div className="message-meta">
+                              <span className="message-time">{formatTime(m.sentAt)}</span>
+                              {isMe && <span className="message-status">{getStatusIcon(m.status)}</span>}
+                            </div>
+                          </div>
                         </div>
-                      )}
-                      {!showAvatar && !isMe && <div className="message-avatar-spacer" />}
-                      
-                      <div className={`message-bubble ${isMe ? 'my-message' : 'their-message'}`}>
-                        <div className="message-content">{m.content}</div>
-                        <div className="message-meta">
-                          <span className="message-time">{formatTime(m.sentAt)}</span>
-                          {isMe && <span className="message-status">{getStatusIcon(m.status)}</span>}
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })
+                      )
+                    })}
+                  </div>
+                ))
               )}
               <div ref={messagesEndRef} />
             </div>

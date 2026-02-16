@@ -116,32 +116,27 @@ public class ConversationRestController {
     @GetMapping("/{id}/messages")
     public ResponseEntity<List<MessageResponse>> getMessages(
             @PathVariable Long id,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "100") int size,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "20") int limit,
             Principal principal) {
-        System.out.println("🌐 GET /api/v1/conversations/" + id + "/messages called");
-        System.out.println("🌐 Principal: " + (principal != null ? principal.getName() : "null"));
-        System.out.println("🌐 Params: page=" + page + ", size=" + size);
+        
+        System.out.println("DEBUG: Fetching messages for conv=" + id + " cursor=" + cursor + " limit=" + limit);
         
         try {
-            System.out.println("📥 Fetching messages for conversation: " + id + " (page=" + page + ", size=" + size + ")");
-            
-            // Verify user is a participant of this conversation
             if (principal != null) {
                 String userId = principal.getName();
                 boolean isParticipant = participantRepository.existsByConversationIdAndParticipantId(id, userId);
                 if (!isParticipant) {
-                    System.out.println("❌ User " + userId + " is not a participant of conversation " + id);
+                    System.out.println("DEBUG: User " + userId + " is not a participant");
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
                 }
-                System.out.println("✅ User " + userId + " is a participant");
             }
             
-            List<MessageResponse> messages = messageService.getMessages(id, page, size);
-            System.out.println("✅ Returning " + messages.size() + " messages");
+            List<MessageResponse> messages = messageService.getMessagesWithCursor(id, cursor, limit);
+            System.out.println("DEBUG: Found " + messages.size() + " messages");
             return ResponseEntity.ok(messages);
         } catch (Exception e) {
-            System.err.println("❌ Error fetching messages for conversation " + id + ": " + e.getMessage());
+            System.err.println("DEBUG ERROR: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(404).build();
         }
