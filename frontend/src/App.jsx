@@ -9,7 +9,6 @@ import Mentors from './pages/Mentors'
 import Dashboard from './pages/Dashboard'
 import Notifications from './pages/Notifications'
 import Navbar from './components/Navbar'
-import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
 
@@ -75,7 +74,6 @@ export default function App() {
           </Routes>
         </main>
       </ErrorBoundary>
-      <Footer />
     </div>
   )
 }

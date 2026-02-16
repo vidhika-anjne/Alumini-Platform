@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/messages")
 public class MessageController {
 
     private final MessageService messageService;
@@ -18,14 +18,14 @@ public class MessageController {
     }
 
     // send message (REST)
-    @PostMapping("/messages")
+    @PostMapping
     public MessageResponse sendMessage(@RequestBody SendMessageRequest req) {
         Message saved = messageService.sendMessage(req);
         return messageService.toDto(saved); // if you make toDto public OR return saved mapped
     }
 
     // fetch history with pagination
-    @GetMapping("/conversations/{conversationId}/messages")
+    @GetMapping("/conversation/{conversationId}")
     public List<MessageResponse> getMessages(
             @PathVariable Long conversationId,
             @RequestParam(defaultValue = "0") int page,
