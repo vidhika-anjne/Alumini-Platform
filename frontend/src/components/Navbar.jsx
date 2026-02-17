@@ -54,7 +54,7 @@ export default function Navbar() {
   return (
     <header className="header">
       <div className="brand">
-        <Link to="/dashboard" className="logo">
+        <Link to="/feed" className="logo">
           <img
             src={logo}
             alt="Company Logo"
@@ -64,7 +64,6 @@ export default function Navbar() {
         <button className="nav-toggle" onClick={() => setOpen((o) => !o)} aria-label="Toggle navigation">☰</button>
       </div>
       <nav className={`nav ${open ? 'open' : ''}`}>
-        <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'active' : ''}>Dashboard</NavLink>
         <NavLink to="/feed" className={({ isActive }) => isActive ? 'active' : ''}>Feed</NavLink>
         {token && <NavLink to="/mentors" className={({ isActive }) => isActive ? 'active' : ''}>Mentors</NavLink>}
         {token && <NavLink to="/chat" className={({ isActive }) => isActive ? 'active' : ''}>Chat</NavLink>}

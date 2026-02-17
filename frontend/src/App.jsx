@@ -6,7 +6,6 @@ import Profile from './pages/Profile'
 import PublicProfile from './pages/PublicProfile'
 import Chat from './pages/Chat'
 import Mentors from './pages/Mentors'
-import Dashboard from './pages/Dashboard'
 import Notifications from './pages/Notifications'
 import Navbar from './components/Navbar'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -19,15 +18,7 @@ export default function App() {
       <ErrorBoundary>
         <main className="content">
           <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/" element={<Navigate to="/feed" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/feed" element={<Feed />} />
