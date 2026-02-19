@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import { useAuth } from '../context/AuthContext'
 
-export default function SearchField() {
+export default function SearchField({ className = '' }) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
   const [isOpen, setIsOpen] = useState(false)
@@ -67,60 +67,56 @@ export default function SearchField() {
   if (!token) return null
 
   return (
-    <div className="search-container" ref={containerRef}>
-      <div style={{ position: 'relative' }}>
+    <div className={`relative w-full ${className}`} ref={containerRef}>
+      <div className="relative">
         <input
           type="text"
-          className="input"
+          className="w-full rounded-full border border-slate-200 bg-white/80 py-2 pl-10 pr-12 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900/60 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-300 dark:focus:ring-indigo-500/30"
           placeholder="Search mentors, skills, alumni..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.length >= 2 && setIsOpen(true)}
-          style={{ paddingLeft: '35px' }}
         />
-        <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>
-          🔍
-        </span>
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg opacity-60">🔍</span>
         {loading && (
-          <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)' }}>
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-500 dark:text-slate-400">
             ⏳
-          </div>
+          </span>
         )}
       </div>
-      
+
       {isOpen && (
-        <div className="search-results">
+        <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 max-h-96 overflow-y-auto rounded-2xl border border-slate-200 bg-white/95 p-1 shadow-2xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
           {results.length > 0 ? (
             results.map((res) => (
-              <div 
-                key={`${res.type}-${res.enrollmentNumber}`} 
-                className="search-item"
+              <button
+                type="button"
+                key={`${res.type}-${res.enrollmentNumber}`}
+                className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm text-slate-700 transition hover:bg-indigo-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 dark:text-slate-200 dark:hover:bg-white/5"
                 onClick={() => handleSelect(res)}
               >
                 {res.avatarUrl ? (
-                  <img src={res.avatarUrl} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} />
+                  <img src={res.avatarUrl} alt="" className="h-10 w-10 rounded-full object-cover" />
                 ) : (
-                  <div className="avatar-small">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-500 text-sm font-semibold text-white">
                     {(res.name || 'U').charAt(0).toUpperCase()}
                   </div>
                 )}
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: '600', fontSize: '0.95rem' }}>{res.name}</div>
-                  <div className="small text-secondary" style={{ fontSize: '0.8rem' }}>
+                <div className="flex-1">
+                  <p className="font-semibold text-slate-900 dark:text-white">{res.name}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {res.type === 'ALUMNI' ? '🎓 Alumni' : '🧑‍🎓 Student'} • {res.department}
-                  </div>
+                  </p>
                   {res.currentCompany && (
-                    <div className="small" style={{ color: 'var(--primary)', fontWeight: '500', fontSize: '0.75rem' }}>
+                    <p className="text-xs font-medium text-indigo-600 dark:text-indigo-300">
                       {res.jobTitle} at {res.currentCompany}
-                    </div>
+                    </p>
                   )}
                 </div>
-              </div>
+              </button>
             ))
           ) : (
-            <div style={{ padding: '20px', textAlign: 'center', color: 'var(--muted)' }}>
-              No matches found
-            </div>
+            <p className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">No matches found</p>
           )}
         </div>
       )}

@@ -51,59 +51,44 @@ export default function PostForm({ onCreated, initialPrompt = "" }) {
   };
 
   return (
-    <form onSubmit={submit} className="card" style={{ marginBottom: 16 }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 8,
-        }}
-      >
-        <h4 style={{ margin: 0 }}>Create Post</h4>
+    <form
+      onSubmit={submit}
+      className="mb-4 space-y-4 rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-lg shadow-indigo-500/5 dark:border-slate-800 dark:bg-slate-950/70"
+    >
+      <div className="flex items-center justify-between">
+        <h4 className="text-lg font-semibold text-slate-900 dark:text-white">Create Post</h4>
       </div>
 
-      <p style={{ margin: "0 0 8px", fontSize: 13, color: "var(--muted)" }}>
-        Share updates, advice, or experiences with your juniors.
-      </p>
+      <p className="text-sm text-slate-500 dark:text-slate-400">Share updates, advice, or experiences with your juniors.</p>
 
       <textarea
-        className="textarea"
+        className="w-full rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900/60 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-300 dark:focus:ring-indigo-500/30"
         value={content}
         onChange={(e) => setContent(e.target.value)}
         rows={3}
         placeholder={"What's happening?"}
-        style={{ marginTop: 4, marginBottom: 10, resize: "vertical" }}
       />
 
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 8,
-          marginBottom: 8,
-        }}
-      >
-        <label style={{ fontSize: 13, color: "var(--muted)" }}>
-          Attach image or video:
+      <div className="flex flex-wrap items-center gap-4">
+        <label className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+          Attach image or video
           <input
             type="file"
             accept="image/*,video/*"
             onChange={(e) => setFile(e.target.files[0])}
-            style={{ display: "block", marginTop: 4, fontSize: 12 }}
+            className="mt-2 text-xs"
           />
         </label>
-        <button className="button primary" disabled={loading} type="submit">
-          {loading ? "Posting…" : "Post"}
+        <button
+          className="ml-auto inline-flex items-center rounded-full bg-indigo-600 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:bg-indigo-500 disabled:opacity-50"
+          disabled={loading}
+          type="submit"
+        >
+          {loading ? 'Posting…' : 'Post'}
         </button>
       </div>
 
-      {error && (
-        <p style={{ color: "tomato", marginBottom: 8, fontSize: 13 }}>
-          {error}
-        </p>
-      )}
+      {error && <p className="text-sm text-rose-500">{error}</p>}
     </form>
-  );
+  )
 }

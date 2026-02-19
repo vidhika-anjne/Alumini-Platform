@@ -49,74 +49,109 @@ export default function PublicProfile() {
     }
   }
 
-  if (loading) return <div className="container">Loading profile...</div>
-  if (error) return <div className="container text-error">{error}</div>
-  if (!profile) return <div className="container">No profile found</div>
+  if (loading) {
+    return <div className="mx-auto max-w-5xl px-4 py-10 text-center text-sm text-slate-500">Loading profile…</div>
+  }
+  if (error) {
+    return <div className="mx-auto max-w-5xl px-4 py-10 text-center text-sm text-rose-500">{error}</div>
+  }
+  if (!profile) {
+    return <div className="mx-auto max-w-5xl px-4 py-10 text-center text-sm text-slate-500">No profile found</div>
+  }
 
   const isSelf = currentUser?.enrollmentNumber === enrollmentNumber
 
   return (
-    <div className="container">
-      <div className="card" style={{ maxWidth: 800, margin: '2rem auto' }}>
-        <div style={{ display: 'flex', gap: 24, alignItems: 'center', marginBottom: 24 }}>
+    <div className="mx-auto max-w-5xl px-4 py-10">
+      <div className="space-y-8 rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-2xl shadow-indigo-500/10 ring-1 ring-slate-100 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80 dark:ring-white/10">
+        <div className="flex flex-col gap-6 md:flex-row md:items-center">
           {profile.avatarUrl ? (
-            <img src={profile.avatarUrl} alt={profile.name} className="avatar" style={{ width: 120, height: 120, borderRadius: '50%' }} />
+            <img src={profile.avatarUrl} alt={profile.name} className="h-32 w-32 rounded-full border-4 border-indigo-500 object-cover shadow-lg" />
           ) : (
-            <div className="avatar" style={{ width: 120, height: 120, fontSize: '3rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-indigo-500 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-4xl font-bold text-white shadow-lg">
               {(profile.name || 'U').charAt(0).toUpperCase()}
             </div>
           )}
-          <div>
-            <h1 style={{ margin: 0 }}>{profile.name}</h1>
-            <p className="text-secondary">{profile.department} | {type.toUpperCase()}</p>
-            <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
-              {profile.githubUrl && <a href={profile.githubUrl} target="_blank" rel="noreferrer" className="button button-soft">GitHub</a>}
-              {profile.linkedinUrl && <a href={profile.linkedinUrl} target="_blank" rel="noreferrer" className="button button-soft">LinkedIn</a>}
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{profile.name}</h1>
+            <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
+              {profile.department} • {type.toUpperCase()}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {profile.githubUrl && (
+                <a href={profile.githubUrl} target="_blank" rel="noreferrer" className="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-indigo-500 hover:text-indigo-600 dark:border-slate-600 dark:text-slate-200">
+                  GitHub ↗
+                </a>
+              )}
+              {profile.linkedinUrl && (
+                <a href={profile.linkedinUrl} target="_blank" rel="noreferrer" className="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-indigo-500 hover:text-indigo-600 dark:border-slate-600 dark:text-slate-200">
+                  LinkedIn ↗
+                </a>
+              )}
             </div>
           </div>
         </div>
 
-        <div className="grid" style={{ gap: 24 }}>
+        <div className="space-y-8">
           <section>
-            <h3>About</h3>
-            <p>{profile.bio || 'No bio provided.'}</p>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white">About</h3>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{profile.bio || 'No bio provided.'}</p>
             {profile.skills && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
-                {Array.isArray(profile.skills) ? profile.skills.map(s => <span key={s} className="badge">{s}</span>) : profile.skills}
+              <div className="mt-4 flex flex-wrap gap-2">
+                {Array.isArray(profile.skills)
+                  ? profile.skills.map((s) => (
+                      <span key={s} className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                        {s}
+                      </span>
+                    ))
+                  : profile.skills}
               </div>
             )}
           </section>
 
           {type.toLowerCase() === 'alumni' && profile.experiences && (
             <section>
-              <h3>Experience</h3>
-              {profile.experiences.map((exp, i) => (
-                <div key={i} className="card-soft" style={{ marginBottom: 12 }}>
-                  <strong>{exp.jobTitle}</strong> at <span>{exp.company}</span>
-                  <div className="small text-secondary">{exp.duration}</div>
-                </div>
-              ))}
+              <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Experience</h3>
+              <div className="mt-4 space-y-3">
+                {profile.experiences.map((exp, i) => (
+                  <div key={i} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-white/5">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{exp.jobTitle}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">{exp.company}</p>
+                    <p className="text-xs uppercase tracking-wide text-slate-400">{exp.duration}</p>
+                  </div>
+                ))}
+              </div>
             </section>
           )}
 
-          <div style={{ marginTop: 24, borderTop: '1px solid var(--border)', paddingTop: 24, display: 'flex', gap: 12 }}>
+          <div className="flex flex-wrap gap-3 border-t border-slate-200 pt-6 dark:border-slate-800">
             {!isSelf && token && (
               <>
                 {connStatus === 'NOT_CONNECTED' && (
-                  <button className="button" onClick={handleConnect}>Connect</button>
+                  <button className="rounded-full bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:bg-indigo-500" onClick={handleConnect}>
+                    Connect
+                  </button>
                 )}
                 {connStatus === 'PENDING' && (
-                  <button className="button button-soft" disabled>Request Pending</button>
+                  <button className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-600 dark:border-slate-600 dark:text-slate-200" disabled>
+                    Request Pending
+                  </button>
                 )}
                 {connStatus === 'CONNECTED' && (
-                  <>
-                    <button className="button button-soft" disabled>Connected ✅</button>
-                    <button className="button" onClick={() => navigate('/chat')}>Message</button>
-                  </>
+                  <div className="flex flex-wrap gap-3">
+                    <button className="rounded-full border border-emerald-300 bg-emerald-50 px-5 py-2 text-sm font-semibold text-emerald-600 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200" disabled>
+                      Connected ✅
+                    </button>
+                    <button className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-indigo-500 hover:text-indigo-600 dark:border-slate-600 dark:text-slate-200" onClick={() => navigate('/chat')}>
+                      Message
+                    </button>
+                  </div>
                 )}
               </>
             )}
-            <button className="button button-soft" onClick={() => navigate(-1)}>Back</button>
+            <button className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-indigo-500 hover:text-indigo-600 dark:border-slate-600 dark:text-slate-200" onClick={() => navigate(-1)}>
+              Back
+            </button>
           </div>
         </div>
       </div>

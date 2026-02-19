@@ -18,110 +18,107 @@ export default function Profile() {
   const [deleteError, setDeleteError] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
 
+  const inputClasses =
+    'mt-2 w-full rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900/60 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-300 dark:focus:ring-indigo-500/30'
+
   useEffect(() => {
     setProfile(user || null)
   }, [user])
 
+  const normalizedUserType = (userType || '').toLowerCase()
+  const apiBase = normalizedUserType === 'alumni' ? '/api/v1/alumni' : '/api/v1/students'
+  const enrollmentNumber = profile?.enrollmentNumber
+
+  const skillsArray = Array.isArray(profile?.skills)
+    ? profile.skills.filter(Boolean)
+    : typeof profile?.skills === 'string'
+    ? profile.skills
+        .split(',')
+        .map((skill) => skill.trim())
+        .filter(Boolean)
+    : []
+
+  const handleAuthUpdate = (data) => {
+    const updated = data?.alumni || data?.student || data
+    if (updated) {
+      setProfile(updated)
+      updateUser(updated)
+    }
+    return updated
+  }
+
   const save = async () => {
-    setMsg('')
+    if (!profile || !enrollmentNumber) {
+      setMsg('Missing profile data to save')
+      return
+    }
+
     try {
-      if (!profile?.enrollmentNumber) return
-      const url = userType === 'alumni'
-        ? `/api/v1/alumni/${profile.enrollmentNumber}`
-        : `/api/v1/students/${profile.enrollmentNumber}`
-      // Prepare payload: ensure student skills is an array if present
-      const payload = { ...profile }
-      if (userType === 'student') {
-        if (typeof payload.skills === 'string') {
-          payload.skills = payload.skills
-            .split(',')
-            .map(s => s.trim())
-            .filter(Boolean)
-        }
+      setMsg('Saving…')
+      const payload = {
+        ...profile,
+        skills: Array.isArray(profile.skills) ? profile.skills : skillsArray,
       }
-
-      const { data } = await api.patch(url, payload)
-      setMsg('Saved successfully!')
-
-      // Merge backend response with frontend-only fields (e.g., social links)
-      const serverObj = data?.alumni || data?.student || {}
-      const merged = {
-        ...serverObj,
-        githubUrl: profile.githubUrl || serverObj.githubUrl,
-        linkedinUrl: profile.linkedinUrl || serverObj.linkedinUrl,
-        bio: profile.bio || serverObj.bio,
-        skills: serverObj.skills ?? profile.skills,
-      }
-      setProfile(merged)
-      updateUser(merged)
-      setIsEditing(false)
-    } catch (err) {
-      setMsg(err?.response?.data?.message || 'Update failed')
+      const { data } = await api.patch(`${apiBase}/${enrollmentNumber}`, payload)
+      handleAuthUpdate(data)
+      setMsg('Profile updated successfully')
+    } catch (error) {
+      console.error('Profile update failed', error)
+      const message = error.response?.data?.message || 'Profile update failed'
+      setMsg(message)
     }
   }
 
-  const avatarEndpoint = (en) => userType === 'alumni'
-    ? `/api/v1/alumni/${en}/avatar`
-    : `/api/v1/students/${en}/avatar`
-
   const uploadAvatarFile = async () => {
-    setMsg('')
+    if (!avatarFile || !enrollmentNumber) {
+      setMsg('Please choose an image file first')
+      return
+    }
+
     try {
-      if (!profile?.enrollmentNumber) return
-      if (!avatarFile) {
-        setMsg('Select a file first')
-        return
-      }
-      const form = new FormData()
-      form.append('file', avatarFile)
-      const { data } = await api.post(avatarEndpoint(profile.enrollmentNumber), form, {
+      const formData = new FormData()
+      formData.append('file', avatarFile)
+      const { data } = await api.post(`${apiBase}/${enrollmentNumber}/avatar`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
-      const serverObj = data?.alumni || data?.student || {}
-      const merged = { ...profile, ...serverObj }
-      setProfile(merged)
-      updateUser(merged)
-      setMsg('Profile image updated')
+      handleAuthUpdate(data)
       setAvatarFile(null)
-    } catch (err) {
-      setMsg(err?.response?.data?.message || 'Upload failed')
+      setMsg('Avatar updated successfully')
+    } catch (error) {
+      console.error('Avatar upload failed', error)
+      const message = error.response?.data?.message || 'Avatar upload failed'
+      setMsg(message)
     }
   }
 
   const setAvatarByUrl = async () => {
-    setMsg('')
+    if (!avatarUrlInput.trim() || !enrollmentNumber) {
+      setMsg('Provide an image URL first')
+      return
+    }
+
     try {
-      if (!profile?.enrollmentNumber) return
-      const url = (avatarUrlInput || '').trim()
-      if (!url) {
-        setMsg('Enter an image URL')
-        return
-      }
-      const { data } = await api.post(
-        avatarEndpoint(profile.enrollmentNumber),
-        { imageUrl: url }
-      )
-      const serverObj = data?.alumni || data?.student || {}
-      const merged = { ...profile, ...serverObj }
-      setProfile(merged)
-      updateUser(merged)
-      setMsg('Profile image updated')
+      const { data } = await api.post(`${apiBase}/${enrollmentNumber}/avatar`, { imageUrl: avatarUrlInput.trim() })
+      handleAuthUpdate(data)
       setAvatarUrlInput('')
-    } catch (err) {
-      setMsg(err?.response?.data?.message || 'Update failed')
+      setMsg('Avatar updated successfully')
+    } catch (error) {
+      console.error('Avatar URL update failed', error)
+      const message = error.response?.data?.message || 'Failed to set avatar URL'
+      setMsg(message)
     }
   }
 
-  const skillsArray = Array.isArray(profile?.skills) 
-    ? profile.skills 
-    : (profile?.skills || '').split(',').map(s => s.trim()).filter(Boolean)
-
   const generateShareLink = () => {
-    const baseUrl = window.location.origin
-    const profileLink = `${baseUrl}/profile/${userType}/${profile.enrollmentNumber}`
-    setShareLink(profileLink)
-    setShowShareModal(true)
+    if (!enrollmentNumber) {
+      setMsg('Cannot share profile without enrollment number')
+      return
+    }
+    const baseType = normalizedUserType || 'student'
+    const url = `${window.location.origin}/profile/${baseType}/${enrollmentNumber}`
+    setShareLink(url)
     setCopied(false)
+    setShowShareModal(true)
   }
 
   const copyToClipboard = async () => {
@@ -129,16 +126,8 @@ export default function Profile() {
       await navigator.clipboard.writeText(shareLink)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea')
-      textArea.value = shareLink
-      document.body.appendChild(textArea)
-      textArea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textArea)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+    } catch (error) {
+      console.error('Copy failed', error)
     }
   }
 
@@ -147,335 +136,304 @@ export default function Profile() {
     setIsDeleting(true)
     try {
       await deleteAccount()
-      navigate('/login')
-    } catch (err) {
-      setDeleteError(err?.response?.data?.message || err?.message || 'Failed to delete account')
+      setShowDeleteModal(false)
+      navigate('/login', { replace: true })
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to delete account'
+      setDeleteError(message)
+    } finally {
       setIsDeleting(false)
     }
   }
 
-  if (!profile) return <p className="container">No profile</p>
+  if (!profile) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-16 text-center text-sm text-slate-500">
+        No profile data available yet.
+      </div>
+    )
+  }
+
+  const initials = ((profile.name || profile.enrollmentNumber || 'U') + '').trim().charAt(0).toUpperCase()
 
   return (
-    <div>
+    <div className="space-y-6">
       <AlumniStatusBanner />
-      <div className="container">
-        <div className="profile-layout">
-          {/* Left Sidebar - Profile Info Display */}
-          <aside className="profile-sidebar">
-            <div className="profile-card">
-              {/* Avatar Section */}
-              <div className="profile-avatar-section">
+      <div className="mx-auto max-w-6xl px-4 py-10 lg:py-14">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-[360px,1fr]">
+          <aside className="space-y-6">
+            <div className="rounded-3xl border border-slate-200 bg-sky-50/90 p-6 shadow-xl shadow-indigo-500/5 ring-1 ring-sky-100 backdrop-blur dark:border-slate-800 dark:bg-slate-950/70 dark:ring-white/5">
+              <div className="flex flex-col items-center text-center">
                 {profile.avatarUrl ? (
-                  <img 
-                    src={profile.avatarUrl} 
-                    alt="Avatar" 
-                    className="profile-avatar-large" 
-                  />
+                  <img src={profile.avatarUrl} alt="Avatar" className="h-32 w-32 rounded-full border-4 border-indigo-500 object-cover shadow-lg" />
                 ) : (
-                  <div className="profile-avatar-placeholder">
-                    {((profile.name || profile.enrollmentNumber || 'U') + '').trim().charAt(0).toUpperCase() || 'U'}
+                  <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-indigo-500 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-4xl font-bold text-white shadow-lg">
+                    {initials}
                   </div>
                 )}
-                <h2 className="profile-name">{profile.name || 'No Name'}</h2>
-                <span className="profile-badge">{userType}</span>
+                <h2 className="mt-4 text-2xl font-bold text-slate-900 dark:text-white">{profile.name || 'No Name'}</h2>
+                <span className="mt-2 rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-indigo-600 dark:bg-indigo-400/10 dark:text-indigo-200">
+                  {userType}
+                </span>
               </div>
 
-              {/* Bio Section */}
-              <div className="profile-bio-section">
-                <h3 className="profile-section-title">
-                  <span>📝</span> Bio
-                </h3>
-                <p className="profile-bio-text">
-                  {profile.bio || 'No bio added yet. Click "Edit Profile" to add one!'}
-                </p>
-              </div>
-
-              {/* Info Section */}
-              <div className="profile-info-section">
-                <h3 className="profile-section-title">
-                  <span>ℹ️</span> Information
-                </h3>
-                <ul className="profile-info-list">
-                  <li>
-                    <span className="info-icon">🎓</span>
+              <div className="mt-6 space-y-4 text-left">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Bio</p>
+                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{profile.bio || 'No bio added yet.'}</p>
+                </div>
+                <div className="space-y-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Details</p>
+                  <div className="space-y-2 rounded-2xl bg-sky-100/80 p-3 dark:bg-white/5">
                     <div>
-                      <span className="info-label">Enrollment</span>
-                      <span className="info-value">{profile.enrollmentNumber || 'N/A'}</span>
+                      <p className="text-xs text-slate-500">Enrollment</p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">{profile.enrollmentNumber || 'N/A'}</p>
                     </div>
-                  </li>
-                  <li>
-                    <span className="info-icon">✉️</span>
                     <div>
-                      <span className="info-label">Email</span>
-                      <span className="info-value">{profile.email || 'N/A'}</span>
+                      <p className="text-xs text-slate-500">Email</p>
+                      <p className="break-words text-sm font-semibold text-slate-900 dark:text-white">{profile.email || 'N/A'}</p>
                     </div>
-                  </li>
-                  {profile.githubUrl && (
-                    <li>
-                      <span className="info-icon">💻</span>
+                    {profile.githubUrl && (
                       <div>
-                        <span className="info-label">GitHub</span>
-                        <a href={profile.githubUrl} target="_blank" rel="noreferrer" className="info-link">
-                          View Profile
+                        <p className="text-xs text-slate-500">GitHub</p>
+                        <a
+                          href={profile.githubUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sm font-semibold text-indigo-600 transition hover:text-indigo-500 dark:text-indigo-300"
+                        >
+                          View Profile ↗
                         </a>
                       </div>
-                    </li>
-                  )}
-                  {profile.linkedinUrl && (
-                    <li>
-                      <span className="info-icon">💼</span>
+                    )}
+                    {profile.linkedinUrl && (
                       <div>
-                        <span className="info-label">LinkedIn</span>
-                        <a href={profile.linkedinUrl} target="_blank" rel="noreferrer" className="info-link">
-                          View Profile
+                        <p className="text-xs text-slate-500">LinkedIn</p>
+                        <a
+                          href={profile.linkedinUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sm font-semibold text-indigo-600 transition hover:text-indigo-500 dark:text-indigo-300"
+                        >
+                          View Profile ↗
                         </a>
                       </div>
-                    </li>
-                  )}
-                </ul>
-              </div>
-
-              {/* Skills Section */}
-              {skillsArray.length > 0 && (
-                <div className="profile-skills-section">
-                  <h3 className="profile-section-title">
-                    <span>🛠️</span> Skills
-                  </h3>
-                  <div className="profile-skills-list">
-                    {skillsArray.map((skill, idx) => (
-                      <span key={idx} className="skill-tag">{skill}</span>
-                    ))}
+                    )}
                   </div>
                 </div>
-              )}
+                {skillsArray.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Skills</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {skillsArray.map((skill) => (
+                        <span key={skill} className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-200">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
 
-              {/* Edit Button */}
-              <button 
-                className="button primary profile-edit-btn" 
+              <button
+                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-xl"
                 onClick={generateShareLink}
               >
-                Share profile                
+                Share profile
               </button>
             </div>
           </aside>
 
-          {/* Share Profile Modal */}
-          {showShareModal && (
-            <div className="modal-overlay" onClick={() => setShowShareModal(false)}>
-              <div className="modal-content share-modal" onClick={(e) => e.stopPropagation()}>
-                <button className="modal-close" onClick={() => setShowShareModal(false)}>×</button>
-                <h3 className="share-modal-title">🔗 Share Your Profile</h3>
-                <p className="share-modal-description">
-                  Copy the link below to share your profile with others:
-                </p>
-                <div className="share-link-container">
-                  <input 
-                    type="text" 
-                    className="input share-link-input" 
-                    value={shareLink} 
-                    readOnly 
-                  />
-                  <button 
-                    className={`button ${copied ? 'success' : 'primary'}`} 
-                    onClick={copyToClipboard}
-                  >
-                    {copied ? '✓ Copied!' : 'Copy'}
-                  </button>
-                </div>
-                <div className="share-social-buttons">
-                  <a 
-                    href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareLink)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="button share-social-btn linkedin"
-                  >
-                    💼 LinkedIn
-                  </a>
-                  <a 
-                    href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareLink)}&text=${encodeURIComponent('Check out my profile!')}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="button share-social-btn twitter"
-                  >
-                    🐦 Twitter
-                  </a>
-                  <a 
-                    href={`mailto:?subject=${encodeURIComponent('Check out my profile')}&body=${encodeURIComponent(`Here's my profile: ${shareLink}`)}`}
-                    className="button share-social-btn email"
-                  >
-                    ✉️ Email
-                  </a>
-                </div>
+          <main className="space-y-6">
+            <div className="rounded-3xl border border-slate-200 bg-sky-50/90 p-6 shadow-xl shadow-indigo-500/5 ring-1 ring-sky-100 backdrop-blur dark:border-slate-800 dark:bg-slate-950/70 dark:ring-white/5">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Edit Profile</h2>
+                {msg && (
+                  <span className={`text-sm font-semibold ${msg.includes('failed') ? 'text-rose-500' : 'text-emerald-500'}`}>
+                    {msg}
+                  </span>
+                )}
               </div>
-            </div>
-          )}
 
-          {/* Right Section - Edit Form */}
-            <main className="profile-main">
-              <div className="card profile-edit-card">
-                <h2 className="profile-edit-title">Edit Profile</h2>
-                
-                {/* Avatar Upload Section */}
-                <div className="profile-edit-section">
-                  <h3 className="profile-edit-section-title">Profile Picture</h3>
-                  <div className="avatar-upload-grid">
-                    <div className="avatar-upload-option">
-                      <label className="label">
-                        Upload from file
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          onChange={(e) => setAvatarFile(e.target.files?.[0] || null)} 
-                          className="input"
-                        />
-                      </label>
-                      <button 
-                        className="button" 
-                        onClick={uploadAvatarFile} 
-                        disabled={!avatarFile}
-                      >
-                        Upload
-                      </button>
-                    </div>
-                    <div className="avatar-upload-option">
-                      <label className="label">
-                        Or set image by URL
-                        <input
-                          className="input"
-                          placeholder="https://example.com/image.jpg"
-                          value={avatarUrlInput}
-                          onChange={(e) => setAvatarUrlInput(e.target.value)}
-                        />
-                      </label>
-                      <button className="button" onClick={setAvatarByUrl}>
-                        Set URL
-                      </button>
-                    </div>
-                  </div>
+              <section className="mt-6 space-y-4">
+                <p className="text-sm font-semibold text-slate-500">Profile Picture</p>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <label className="rounded-2xl border border-slate-200/80 p-4 text-sm text-slate-600 shadow-inner dark:border-slate-800/80 dark:text-slate-300">
+                    <span className="font-medium text-slate-700 dark:text-slate-200">Upload from file</span>
+                    <input type="file" accept="image/*" onChange={(e) => setAvatarFile(e.target.files?.[0] || null)} className="mt-3 block text-xs" />
+                    <button
+                      type="button"
+                      className="mt-3 inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-900"
+                      onClick={uploadAvatarFile}
+                      disabled={!avatarFile}
+                    >
+                      Upload
+                    </button>
+                  </label>
+                  <label className="rounded-2xl border border-slate-200/80 p-4 text-sm text-slate-600 shadow-inner dark:border-slate-800/80 dark:text-slate-300">
+                    <span className="font-medium text-slate-700 dark:text-slate-200">Or set image by URL</span>
+                    <input className={`${inputClasses} mt-3`} placeholder="https://example.com/image.jpg" value={avatarUrlInput} onChange={(e) => setAvatarUrlInput(e.target.value)} />
+                    <button
+                      type="button"
+                      className="mt-3 inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:border-indigo-500 hover:text-indigo-600 dark:border-slate-600 dark:text-slate-200"
+                      onClick={setAvatarByUrl}
+                    >
+                      Set URL
+                    </button>
+                  </label>
                 </div>
+              </section>
 
-                {/* Basic Info Section */}
-                <div className="profile-edit-section">
-                  <h3 className="profile-edit-section-title">Basic Information</h3>
-                  <label className="label">
+              <section className="mt-8 space-y-4">
+                <p className="text-sm font-semibold text-slate-500">Basic Information</p>
+                <div className="space-y-4">
+                  <label className="block text-sm font-medium text-slate-600 dark:text-slate-200">
                     Name
-                    <input 
-                      className="input" 
-                      value={profile.name || ''} 
-                      onChange={(e) => setProfile({ ...profile, name: e.target.value })} 
-                    />
+                    <input className={inputClasses} value={profile.name || ''} onChange={(e) => setProfile({ ...profile, name: e.target.value })} />
                   </label>
-                  <label className="label">
+                  <label className="block text-sm font-medium text-slate-600 dark:text-slate-200">
                     Email
-                    <input 
-                      className="input" 
-                      value={profile.email || ''} 
-                      onChange={(e) => setProfile({ ...profile, email: e.target.value })} 
-                    />
+                    <input className={inputClasses} value={profile.email || ''} onChange={(e) => setProfile({ ...profile, email: e.target.value })} />
                   </label>
                 </div>
+              </section>
 
-                {/* Bio Section */}
-                <div className="profile-edit-section">
-                  <h3 className="profile-edit-section-title">About You</h3>
-                  <label className="label">
-                    Bio
-                    <textarea 
-                      className="textarea" 
-                      placeholder="Tell us about yourself, your interests, and goals..."
-                      rows={4}
-                      value={profile.bio || ''} 
-                      onChange={(e) => setProfile({ ...profile, bio: e.target.value })} 
-                    />
-                  </label>
-                  <label className="label">
-                    Skills (comma-separated)
-                    <input
-                      className="input"
-                      placeholder="e.g. JavaScript, React, SQL"
-                      value={Array.isArray(profile.skills) ? profile.skills.join(', ') : (profile.skills || '')}
-                      onChange={(e) => setProfile({ ...profile, skills: e.target.value })}
-                    />
-                  </label>
-                </div>
+              <section className="mt-8 space-y-4">
+                <p className="text-sm font-semibold text-slate-500">About You</p>
+                <label className="block text-sm font-medium text-slate-600 dark:text-slate-200">
+                  Bio
+                  <textarea
+                    className={`${inputClasses} resize-none`}
+                    rows={4}
+                    placeholder="Tell us about yourself, your interests, and goals..."
+                    value={profile.bio || ''}
+                    onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                  />
+                </label>
+                <label className="block text-sm font-medium text-slate-600 dark:text-slate-200">
+                  Skills (comma-separated)
+                  <input
+                    className={inputClasses}
+                    placeholder="e.g. JavaScript, React, SQL"
+                    value={Array.isArray(profile.skills) ? profile.skills.join(', ') : profile.skills || ''}
+                    onChange={(e) => setProfile({ ...profile, skills: e.target.value })}
+                  />
+                </label>
+              </section>
 
-                {/* Social Links Section */}
-                <div className="profile-edit-section">
-                  <h3 className="profile-edit-section-title">Social Links</h3>
-                  <label className="label">
-                    GitHub URL
-                    <input
-                      className="input"
-                      placeholder="https://github.com/username"
-                      value={profile.githubUrl || ''}
-                      onChange={(e) => setProfile({ ...profile, githubUrl: e.target.value })}
-                    />
-                  </label>
-                  <label className="label">
-                    LinkedIn URL
-                    <input
-                      className="input"
-                      placeholder="https://www.linkedin.com/in/username"
-                      value={profile.linkedinUrl || ''}
-                      onChange={(e) => setProfile({ ...profile, linkedinUrl: e.target.value })}
-                    />
-                  </label>
-                </div>
+              <section className="mt-8 space-y-4">
+                <p className="text-sm font-semibold text-slate-500">Social Links</p>
+                <label className="block text-sm font-medium text-slate-600 dark:text-slate-200">
+                  GitHub URL
+                  <input
+                    className={inputClasses}
+                    placeholder="https://github.com/username"
+                    value={profile.githubUrl || ''}
+                    onChange={(e) => setProfile({ ...profile, githubUrl: e.target.value })}
+                  />
+                </label>
+                <label className="block text-sm font-medium text-slate-600 dark:text-slate-200">
+                  LinkedIn URL
+                  <input
+                    className={inputClasses}
+                    placeholder="https://www.linkedin.com/in/username"
+                    value={profile.linkedinUrl || ''}
+                    onChange={(e) => setProfile({ ...profile, linkedinUrl: e.target.value })}
+                  />
+                </label>
+              </section>
 
-                {/* Save Button */}
-                <div className="profile-save-section">
-                  <button className="button primary" onClick={save}>
-                    Save Changes
-                  </button>
-                  {msg && <p className={`profile-msg ${msg.includes('failed') ? 'error' : 'success'}`}>{msg}</p>}
-                </div>
-
-                {/* Delete Account Section */}
-                <div className="profile-delete-section">
-                  <h3 className="profile-edit-section-title danger">Danger Zone</h3>
-                  <p className="delete-warning-text">Once you delete your account, there is no going back. Please be certain.</p>
-                  <button 
-                    className="button danger" 
-                    onClick={() => setShowDeleteModal(true)}
-                  >
-                    Delete Account
-                  </button>
-                </div>
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                <button className="inline-flex items-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:bg-indigo-500" onClick={save}>
+                  Save Changes
+                </button>
+                {msg && (
+                  <p className={`text-sm font-semibold ${msg.includes('failed') ? 'text-rose-500' : 'text-emerald-500'}`}>
+                    {msg}
+                  </p>
+                )}
               </div>
-            </main>
 
-          {/* Delete Account Confirmation Modal */}
-          {showDeleteModal && (
-            <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
-              <div className="modal-content delete-modal" onClick={(e) => e.stopPropagation()}>
-                <button className="modal-close" onClick={() => setShowDeleteModal(false)}>×</button>
-                <h3 className="delete-modal-title">⚠️ Delete Account</h3>
-                <p className="delete-modal-description">
-                  Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed.
-                </p>
-                {deleteError && <p className="delete-error">{deleteError}</p>}
-                <div className="delete-modal-buttons">
-                  <button 
-                    className="button" 
-                    onClick={() => setShowDeleteModal(false)}
-                    disabled={isDeleting}
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    className="button danger" 
-                    onClick={handleDeleteAccount}
-                    disabled={isDeleting}
-                  >
-                    {isDeleting ? 'Deleting...' : 'Yes, Delete My Account'}
-                  </button>
-                </div>
+              <div className="mt-10 rounded-2xl border border-rose-200/60 bg-rose-50/60 p-6 dark:border-rose-500/30 dark:bg-rose-500/10">
+                <p className="text-sm font-semibold uppercase tracking-wide text-rose-600">Danger Zone</p>
+                <p className="mt-3 text-sm text-rose-500">Once you delete your account, there is no going back. Please be certain.</p>
+                <button className="mt-4 inline-flex items-center rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-rose-500" onClick={() => setShowDeleteModal(true)}>
+                  Delete Account
+                </button>
               </div>
             </div>
-          )}
+          </main>
         </div>
       </div>
+
+      {showShareModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 px-4" onClick={() => setShowShareModal(false)}>
+          <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-sky-50/95 p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900/95" onClick={(e) => e.stopPropagation()}>
+            <button className="float-right text-2xl text-slate-500" onClick={() => setShowShareModal(false)}>
+              ×
+            </button>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Share Your Profile</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Copy the link below to share your profile with others:</p>
+            <div className="mt-4 flex flex-col gap-3">
+              <input type="text" className={inputClasses} value={shareLink} readOnly />
+              <button className={`rounded-full px-4 py-2 text-sm font-semibold text-white ${copied ? 'bg-emerald-500' : 'bg-indigo-600'} transition`} onClick={copyToClipboard}>
+                {copied ? '✓ Copied!' : 'Copy'}
+              </button>
+            </div>
+            <div className="mt-6 flex flex-wrap gap-3 text-sm font-semibold">
+              <a
+                className="flex-1 rounded-2xl bg-[#0A66C2] px-4 py-2 text-center text-white"
+                href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareLink)}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                LinkedIn
+              </a>
+              <a
+                className="flex-1 rounded-2xl bg-[#1DA1F2] px-4 py-2 text-center text-white"
+                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareLink)}&text=${encodeURIComponent('Check out my profile!')}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Twitter
+              </a>
+              <a
+                className="flex-1 rounded-2xl bg-slate-900 px-4 py-2 text-center text-white dark:bg-white dark:text-slate-900"
+                href={`mailto:?subject=${encodeURIComponent('Check out my profile')}&body=${encodeURIComponent(`Here's my profile: ${shareLink}`)}`}
+              >
+                Email
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 px-4" onClick={() => setShowDeleteModal(false)}>
+          <div className="w-full max-w-md rounded-3xl border border-rose-200 bg-white/95 p-6 shadow-2xl dark:border-rose-500/40 dark:bg-slate-950" onClick={(e) => e.stopPropagation()}>
+            <button className="float-right text-2xl text-rose-400" onClick={() => setShowDeleteModal(false)}>
+              ×
+            </button>
+            <h3 className="text-xl font-semibold text-rose-600 dark:text-rose-300">Delete Account</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">
+              Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed.
+            </p>
+            {deleteError && (
+              <p className="mt-3 rounded-2xl bg-rose-100 px-4 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+                {deleteError}
+              </p>
+            )}
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 dark:border-slate-600 dark:text-slate-200" onClick={() => setShowDeleteModal(false)} disabled={isDeleting}>
+                Cancel
+              </button>
+              <button className="rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:opacity-60" onClick={handleDeleteAccount} disabled={isDeleting}>
+                {isDeleting ? 'Deleting…' : 'Yes, delete my account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

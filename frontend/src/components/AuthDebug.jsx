@@ -69,28 +69,5 @@ export default function AuthDebug() {
   const isStorageTokenPresent = localStorage.getItem('token') && localStorage.getItem('token').trim() !== ''
 
   return (<></>
-    // <div style={{ 
-    //   position: 'fixed', 
-    //   top: 10, 
-    //   right: 10, 
-    //   background: isTokenPresent ? '#e8f5e8' : '#ffe8e8', 
-    //   padding: '10px', 
-    //   borderRadius: '5px', 
-    //   fontSize: '12px',
-    //   border: '1px solid #ccc',
-    //   zIndex: 1000
-    // }}>
-    //   <div style={{ marginBottom: '8px', fontWeight: 'bold' }}>
-    //     Auth Status: {isTokenPresent ? '✅ Token Present' : '❌ No Token'}
-    //   </div>
-    //   <div style={{ marginBottom: '8px' }}>
-    //     Storage: {isStorageTokenPresent ? '✅' : '❌'} | Context: {isTokenPresent ? '✅' : '❌'}
-    //   </div>
-    //   <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-    //     <button onClick={checkToken} style={{ fontSize: '11px' }}>Check Auth</button>
-    //     <button onClick={testAPI} style={{ fontSize: '11px' }}>Test API</button>
-    //     <button onClick={clearAuth} style={{ fontSize: '11px' }}>Clear Auth</button>
-    //   </div>
-    // </div>
   )
 }

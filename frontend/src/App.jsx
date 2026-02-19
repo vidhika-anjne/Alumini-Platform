@@ -13,10 +13,10 @@ import ErrorBoundary from './components/ErrorBoundary'
 
 export default function App() {
   return (
-    <div className="app">
+    <div className="flex min-h-screen flex-col">
       <Navbar />
       <ErrorBoundary>
-        <main className="content">
+        <main className="flex-1">
           <Routes>
             <Route path="/" element={<Navigate to="/feed" replace />} />
             <Route path="/login" element={<Login />} />

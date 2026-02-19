@@ -18,10 +18,15 @@ export default class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="container" style={{ maxWidth: 800 }}>
-          <h2>Something went wrong.</h2>
-          <p style={{ color: 'tomato' }}>{String(this.state.error)}</p>
-          <button className="button" onClick={() => window.location.reload()}>Reload</button>
+        <div className="mx-auto max-w-3xl px-4 py-16 text-center">
+          <h2 className="text-2xl font-bold text-rose-600">Something went wrong.</h2>
+          <p className="mt-2 text-sm text-rose-400">{String(this.state.error)}</p>
+          <button
+            className="mt-6 rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-indigo-500 hover:text-indigo-600"
+            onClick={() => window.location.reload()}
+          >
+            Reload
+          </button>
         </div>
       )
     }

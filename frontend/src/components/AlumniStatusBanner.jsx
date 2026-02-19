@@ -112,13 +112,19 @@ export default function AlumniStatusBanner() {
     tone = 'info'
   }
 
+  const toneClasses = {
+    info: 'bg-indigo-50/80 text-indigo-900 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-100 dark:border-indigo-400/20',
+    highlight: 'bg-amber-50/90 text-amber-900 border-amber-200 dark:bg-amber-500/10 dark:text-amber-100 dark:border-amber-400/30',
+    success: 'bg-emerald-50/90 text-emerald-900 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-100 dark:border-emerald-400/30',
+    warn: 'bg-rose-50/90 text-rose-900 border-rose-200 dark:bg-rose-500/10 dark:text-rose-100 dark:border-rose-400/30',
+  }
+
   return (
-    <div className={`banner banner-${tone}`} role="status" aria-live="polite">
-      <div className="container banner-inner" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <span className="banner-text" style={{ flex: 1 }}>{message}</span>
-        {/* Convert button is always visible, disabled unless eligible */}
+    <div className={`px-4 py-3 ${toneClasses[tone] || toneClasses.info}`} role="status" aria-live="polite">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4">
+        <span className="flex-1 text-sm font-medium">{message}</span>
         <button
-          className="button primary"
+          className="inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-900"
           disabled={!eligible || loading || converting}
           onClick={onConfirmAlumni}
           aria-disabled={!eligible || loading || converting}
@@ -128,8 +134,8 @@ export default function AlumniStatusBanner() {
         </button>
       </div>
       {!eligible && !loading && !error && decision !== 'CONFIRMED_ALUMNI' && (
-        <div className="container" style={{ paddingBottom: 10 }}>
-          <span className="small">Not eligible to convert yet.</span>
+        <div className="mx-auto mt-1 max-w-6xl text-xs text-slate-500 dark:text-slate-300">
+          Not eligible to convert yet.
         </div>
       )}
     </div>
