@@ -72,6 +72,13 @@ const getInitials = (name) => {
   return parts.slice(0, 2).map((chunk) => chunk[0]?.toUpperCase() || '').join('')
 }
 
+const getTimestamp = (value) => {
+  const time = value ? new Date(value).getTime() : NaN
+  return Number.isFinite(time) ? time : 0
+}
+
+const sortPostsByDate = (list) => [...list].sort((a, b) => getTimestamp(b.createdAt) - getTimestamp(a.createdAt))
+
 export default function Feed() {
   const [posts, setPosts] = useState([])
   const [postPrompt, setPostPrompt] = useState('')
@@ -87,7 +94,7 @@ export default function Feed() {
         : Array.isArray(data?.content)
           ? data.content
           : []
-      setPosts(items)
+      setPosts(sortPostsByDate(items))
     } catch (error) {
       console.error('Unable to load posts', error)
       setPosts([])
@@ -137,7 +144,7 @@ export default function Feed() {
                   </p>
                 </div>
               </div>
-              <div className="rounded-xl bg-slate-50/70 p-4 text-sm dark:bg-slate-900/40">
+              <div className="rounded-xl  p-4 text-sm dark:bg-slate-900/40">
                 <dl className="space-y-2">
                   <div className="flex items-center justify-between">
                     <dt className={`${subtleText}`}>Weekly reach</dt>
@@ -273,7 +280,7 @@ export default function Feed() {
                   </div>
 
                   {post.content && (
-                    <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+                    <p className="text-sm leading-relaxed text-black-900 dark:text-slate-200">
                       {post.content}
                     </p>
                   )}
