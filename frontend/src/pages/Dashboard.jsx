@@ -52,7 +52,7 @@ export default function Dashboard() {
             <h1 className="text-4xl font-bold leading-tight">Reconnect with Alumni and Network</h1>
             <p className="text-base text-white/80">Join the celebration — connect, share, and grow together. Reserve your spot and be part of the story.</p>
             <div className="flex flex-wrap gap-3">
-              <Link className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-indigo-600 shadow-lg shadow-white/30 transition hover:bg-slate-100" to="/meetup-2026">
+              <Link className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-indigo-600 shadow-lg shadow-white/30 transition hover:bg-sky-50" to="/meetup-2026">
                 Join the Meetup
               </Link>
               <a className="rounded-full border border-white/60 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10" href="#" aria-label="Book tickets">
@@ -68,7 +68,7 @@ export default function Dashboard() {
 
       <div className="mx-auto max-w-6xl px-4 py-12">
         <div className="grid gap-6 md:grid-cols-3">
-          <div className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-lg shadow-indigo-500/10 dark:border-slate-800 dark:bg-slate-950/70">
+          <div className="rounded-3xl border border-sky-100 bg-sky-50/90 p-6 shadow-lg shadow-indigo-500/10 dark:border-slate-800 dark:bg-slate-950/70">
             <div className="flex items-center gap-4">
               <img src={storiesIcon} alt="Stories" className="h-14 w-14" />
               <div>
@@ -82,7 +82,7 @@ export default function Dashboard() {
             </Link>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-lg shadow-indigo-500/10 dark:border-slate-800 dark:bg-slate-950/70">
+          <div className="rounded-3xl border border-sky-100 bg-sky-50/90 p-6 shadow-lg shadow-indigo-500/10 dark:border-slate-800 dark:bg-slate-950/70">
             <div className="flex items-center gap-4">
               <img src={mentorsIcon} alt="Mentors" className="h-14 w-14" />
               <div>
@@ -96,7 +96,7 @@ export default function Dashboard() {
             </Link>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-lg shadow-indigo-500/10 dark:border-slate-800 dark:bg-slate-950/70">
+          <div className="rounded-3xl border border-sky-100 bg-sky-50/90 p-6 shadow-lg shadow-indigo-500/10 dark:border-slate-800 dark:bg-slate-950/70">
             <div className="flex items-center gap-4">
               <img src={chatIcon} alt="Conversations" className="h-14 w-14" />
               <div>

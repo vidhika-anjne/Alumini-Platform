@@ -515,7 +515,7 @@ export default function Chat() {
     : 'radial-gradient(circle at 10% 15%, rgba(56,189,248,0.18), transparent 45%)'
 
   return (
-    <div className={`relative isolate min-h-[calc(100vh-80px)] overflow-hidden ${themed('bg-slate-950 text-slate-50','bg-slate-50 text-slate-900')}`}>
+    <div className={`relative isolate min-h-[calc(100vh-80px)] overflow-hidden ${themed('bg-slate-950 text-slate-50','bg-sky-50 text-slate-900')}`}>
       <div
         className={`pointer-events-none absolute inset-0 ${themed(
           'bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_55%)]',
@@ -604,7 +604,7 @@ export default function Chat() {
                       key={u.userId}
                       className={`group flex w-full items-center gap-3 rounded-2xl border px-3 py-2 text-left transition ${themed(
                         'border-white/5 bg-white/5 hover:border-white/20 hover:bg-white/10',
-                        'border-slate-200 bg-white hover:border-slate-400 hover:bg-slate-50'
+                        'border-sky-100 bg-sky-50/80 hover:border-sky-300 hover:bg-sky-100'
                       )}`}
                       onClick={() => startConversationWithUser(u)}
                     >
@@ -801,7 +801,7 @@ export default function Chat() {
                                   <div
                                     className={`mt-5 flex h-9 w-9 items-center justify-center rounded-2xl text-xs font-semibold ${themed(
                                       'bg-white/10 text-slate-200',
-                                      'bg-slate-200 text-slate-700'
+                                      'bg-sky-100 text-slate-700'
                                     )}`}
                                   >
                                     {activeParticipant?.avatarUrl ? (
@@ -848,7 +848,7 @@ export default function Chat() {
             </div>
 
             {/* Input Area */}
-            <div className={`border-t px-4 py-4 sm:px-6 ${themed('border-white/5 bg-slate-900/40','border-slate-200 bg-slate-50/80')}`}>
+            <div className={`border-t px-4 py-4 sm:px-6 ${themed('border-white/5 bg-slate-900/40','border-sky-100 bg-sky-50/80')}`}>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <div
                   className={`flex flex-1 items-center rounded-2xl border px-4 py-2 focus-within:border-sky-400/60 ${themed(

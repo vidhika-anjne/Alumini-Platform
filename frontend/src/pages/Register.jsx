@@ -25,19 +25,19 @@ export default function Register() {
   const { theme } = useTheme()
   const nav = useNavigate()
   const isDark = theme === 'dark'
-  const sectionClasses = `min-h-screen px-4 py-12 transition-colors duration-500 ${isDark ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`
-  const shellClasses = `mx-auto flex w-full max-w-5xl flex-col overflow-hidden rounded-3xl shadow-2xl ring-1 backdrop-blur-xl transition-colors duration-500 ${isDark ? 'bg-slate-900/80 text-white ring-white/10' : 'bg-white text-slate-900 ring-slate-200'}`
+  const sectionClasses = `min-h-screen px-4 py-12 transition-colors duration-500 ${isDark ? 'bg-slate-950 text-white' : 'bg-sky-50 text-slate-900'}`
+  const shellClasses = `mx-auto flex w-full max-w-5xl flex-col overflow-hidden rounded-3xl shadow-2xl ring-1 backdrop-blur-xl transition-colors duration-500 ${isDark ? 'bg-slate-900/80 text-white ring-white/10' : 'bg-sky-50/90 text-slate-900 ring-sky-100'}`
   const labelClasses = `flex flex-col gap-2 text-sm font-medium ${isDark ? 'text-slate-200' : 'text-slate-700'}`
   const fieldClasses = `rounded-2xl border px-4 py-3 text-base transition focus:outline-none focus:ring-2 ${isDark ? 'border-white/10 bg-white/5 text-white placeholder:text-white/40 focus:border-indigo-400 focus:ring-indigo-400/50' : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-500 focus:border-indigo-500 focus:ring-indigo-200'}`
   const overlayClasses = isDark
     ? 'absolute inset-0 bg-gradient-to-br from-indigo-500/70 via-purple-500/60 to-pink-500/60 mix-blend-multiply'
     : 'absolute inset-0 bg-gradient-to-br from-indigo-400/40 via-purple-400/40 to-pink-300/40'
-  const asideCardClasses = `absolute bottom-8 left-8 right-8 rounded-2xl p-6 backdrop-blur transition ${isDark ? 'bg-white/10 text-white' : 'bg-white/90 text-slate-900 shadow-2xl ring-1 ring-slate-100'}`
+  const asideCardClasses = `absolute bottom-8 left-8 right-8 rounded-2xl p-6 backdrop-blur transition ${isDark ? 'bg-white/10 text-white' : 'bg-sky-50/90 text-slate-900 shadow-2xl ring-1 ring-sky-100'}`
   const helperTextClasses = isDark ? 'text-white/70' : 'text-slate-600'
   const accentTextClasses = isDark ? 'text-indigo-300' : 'text-indigo-600'
   const successTextClasses = isDark ? 'text-emerald-300' : 'text-emerald-600'
   const errorTextClasses = isDark ? 'text-rose-300' : 'text-rose-500'
-  const visibilityButtonClasses = `absolute inset-y-1 right-2 flex items-center rounded-xl px-3 text-xs font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${isDark ? 'bg-white/10 text-white hover:bg-white/20 focus-visible:outline-white/60' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 focus-visible:outline-slate-300'}`
+  const visibilityButtonClasses = `absolute inset-y-1 right-2 flex items-center rounded-xl px-3 text-xs font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${isDark ? 'bg-white/10 text-white hover:bg-white/20 focus-visible:outline-white/60' : 'bg-sky-100 text-slate-700 hover:bg-sky-200 focus-visible:outline-sky-300'}`
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev)
 
   const onSubmit = async (e) => {

@@ -114,7 +114,7 @@ export default function PublicProfile() {
               <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Experience</h3>
               <div className="mt-4 space-y-3">
                 {profile.experiences.map((exp, i) => (
-                  <div key={i} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-white/5">
+                  <div key={i} className="rounded-2xl border border-sky-100 bg-sky-50/70 p-4 dark:border-slate-700 dark:bg-white/5">
                     <p className="text-sm font-semibold text-slate-900 dark:text-white">{exp.jobTitle}</p>
                     <p className="text-sm text-slate-600 dark:text-slate-300">{exp.company}</p>
                     <p className="text-xs uppercase tracking-wide text-slate-400">{exp.duration}</p>

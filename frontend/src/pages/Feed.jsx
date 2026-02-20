@@ -110,7 +110,7 @@ export default function Feed() {
 
   const surface = theme === 'dark'
     ? 'bg-slate-900/60 border border-slate-800 shadow-[0_0_0_1px_rgba(15,23,42,0.65)]'
-    : 'bg-white border border-slate-200 shadow-sm'
+    : 'bg-sky-50/90 border border-sky-100 shadow-sm'
   const subtleText = theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
   const heroAccent = theme === 'dark'
     ? 'bg-gradient-to-r from-slate-800 to-slate-900'
@@ -123,7 +123,7 @@ export default function Feed() {
       className={`min-h-screen w-full ${
         theme === 'dark'
           ? 'bg-slate-950 text-slate-100'
-          : 'bg-slate-100 text-slate-900'
+          : 'bg-sky-50 text-slate-900'
       } py-8 px-4 sm:px-6`}
     >
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 lg:flex-row">
@@ -144,7 +144,7 @@ export default function Feed() {
                   </p>
                 </div>
               </div>
-              <div className="rounded-xl  p-4 text-sm dark:bg-slate-900/40">
+              <div className="rounded-xl  p-4 text-sm">
                 <dl className="space-y-2">
                   <div className="flex items-center justify-between">
                     <dt className={`${subtleText}`}>Weekly reach</dt>
@@ -176,14 +176,14 @@ export default function Feed() {
               </button>
               <button
                 type="button"
-                className="flex items-center justify-between rounded-xl px-4 py-3 font-medium transition hover:bg-slate-100 dark:hover:bg-slate-800/70"
+                className="flex items-center justify-between rounded-xl px-4 py-3 font-medium transition hover:bg-sky-100 dark:hover:bg-slate-800/70"
               >
                 Schedule mentorship
                 <span aria-hidden className="text-xl">🗂️</span>
               </button>
               <button
                 type="button"
-                className="flex items-center justify-between rounded-xl px-4 py-3 font-medium transition hover:bg-slate-100 dark:hover:bg-slate-800/70"
+                className="flex items-center justify-between rounded-xl px-4 py-3 font-medium transition hover:bg-sky-100 dark:hover:bg-slate-800/70"
               >
                 Share opportunity
                 <span aria-hidden className="text-xl">🚀</span>
@@ -234,7 +234,7 @@ export default function Feed() {
                     key={suggestion.title}
                     type="button"
                     onClick={() => handleSuggestionClick(suggestion)}
-                    className="rounded-full bg-slate-100 px-4 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-indigo-100 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                    className="rounded-full bg-sky-100 px-4 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-sky-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                   >
                     {suggestion.icon} {suggestion.title}
                   </button>

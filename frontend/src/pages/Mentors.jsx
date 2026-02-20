@@ -6,7 +6,7 @@ import AuthDebug from '../components/AuthDebug'
 
 const statusStylesLight = {
   EMPLOYED: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  UNEMPLOYED: 'border-slate-200 bg-slate-50 text-slate-600',
+  UNEMPLOYED: 'border-sky-200 bg-sky-50 text-slate-600',
   SELF_EMPLOYED: 'border-amber-200 bg-amber-50 text-amber-700',
   SEEKING_OPPORTUNITIES: 'border-indigo-200 bg-indigo-50 text-indigo-700',
   HIGHER_STUDIES: 'border-cyan-200 bg-cyan-50 text-cyan-700',
@@ -54,7 +54,7 @@ const getLatestExperience = (experiences) => {
 const getStatusBadge = (status, isDark) => {
   const fallback = isDark
     ? 'border-slate-700 bg-slate-800/80 text-slate-200'
-    : 'border-slate-200 bg-slate-50 text-slate-500'
+    : 'border-sky-100 bg-sky-50 text-slate-500'
   if (!status) return fallback
   const palette = isDark ? statusStylesDark[status] : statusStylesLight[status]
   return palette || fallback
@@ -214,7 +214,7 @@ export default function Mentors() {
   const primaryButton = `inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-white transition disabled:cursor-not-allowed ${
     isDark
       ? 'bg-indigo-500 hover:bg-indigo-400 disabled:bg-slate-600'
-      : 'bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-300'
+      : 'bg-indigo-600 hover:bg-indigo-500 disabled:bg-sky-200'
   }`
 
   const secondaryButton = `inline-flex items-center justify-center rounded-full border px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
@@ -237,7 +237,7 @@ export default function Mentors() {
     }
     if (status === 'PENDING_SENT') {
       return (
-        <button type="button" className={`${secondaryButton} ${isDark ? 'bg-slate-900/40 text-slate-400' : 'bg-slate-50'}`} disabled>
+        <button type="button" className={`${secondaryButton} ${isDark ? 'bg-slate-900/40 text-slate-400' : 'bg-sky-50'}`} disabled>
           Request sent
         </button>
       )
@@ -272,11 +272,11 @@ export default function Mentors() {
   }`
   const chipShell = isDark ? 'border-slate-700 text-slate-200' : 'border-slate-200 text-slate-700'
   const tagStyle = isDark ? 'border-slate-700 text-slate-200' : 'border-slate-200 text-slate-600'
-  const infoPanel = isDark ? 'bg-slate-900/50 text-slate-200' : 'bg-slate-50 text-slate-600'
+  const infoPanel = isDark ? 'bg-slate-900/50 text-slate-200' : 'bg-sky-50 text-slate-600'
   const infoPanelLabel = 'text-slate-400'
 
   return (
-    <div className={`min-h-screen px-4 py-8 ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+    <div className={`min-h-screen px-4 py-8 ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-sky-50 text-slate-900'}`}>
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
         <header className={`rounded-3xl p-8 ${surfacePanel}`}>
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">

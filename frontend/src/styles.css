@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Use .dark class (toggled by ThemeContext) instead of OS media query */
+@variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     color-scheme: light;
@@ -18,7 +21,7 @@
   }
 
   body {
-    @apply m-0 min-h-full bg-sky-50 text-slate-900 font-sans antialiased;
+    @apply m-0 min-h-full text-slate-900 font-sans antialiased;
   }
 
 

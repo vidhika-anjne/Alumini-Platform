@@ -63,7 +63,7 @@ export default function Navbar() {
   }, [location.pathname])
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 bg-sky-50/90 backdrop-blur supports-[backdrop-filter]:bg-sky-50/80 dark:border-slate-800 dark:bg-slate-950/70">
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-sky-50/90 backdrop-blur supports-[backdrop-filter]:bg-sky-50/80 dark:border-slate-800 dark:bg-slate-950/70 ">
       <div className="mx-auto flex w-full max-w-7xl items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <Link to="/feed" className="inline-flex items-center gap-2">

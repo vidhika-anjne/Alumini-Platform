@@ -53,16 +53,16 @@ export default function PostForm({ onCreated, initialPrompt = "" }) {
   return (
     <form
       onSubmit={submit}
-      className="mb-4 space-y-4 rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-lg shadow-indigo-500/5 dark:border-slate-800 dark:bg-slate-950/70"
+      className="mb-4 space-y-4 rounded-3xl border border-sky-100 bg-sky-50/90 p-5 shadow-lg shadow-indigo-500/5 dark:border-slate-800 dark:bg-slate-950/70"
     >
       <div className="flex items-center justify-between">
         <h4 className="text-lg font-semibold text-slate-900 dark:text-white">Create Post</h4>
       </div>
 
-      <p className="text-sm text-slate-500 dark:text-slate-400">Share updates, advice, or experiences with your juniors.</p>
+      <p className="text-sm text-slate-500 ">Share updates, advice, or experiences with your juniors.</p>
 
       <textarea
-        className="w-full rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900/60 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-300 dark:focus:ring-indigo-500/30"
+        className="w-full rounded-2xl border border-sky-100 bg-sky-50/80 px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 dark:border-slate-700 dark:bg-slate-900/60 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-300 dark:focus:ring-indigo-500/30"
         value={content}
         onChange={(e) => setContent(e.target.value)}
         rows={3}
