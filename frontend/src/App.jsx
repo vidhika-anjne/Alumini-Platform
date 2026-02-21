@@ -8,6 +8,7 @@ import Chat from './pages/Chat'
 import Mentors from './pages/Mentors'
 import Dashboard from './pages/Dashboard'
 import Notifications from './pages/Notifications'
+import AISearch from './pages/AISearch'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -37,6 +38,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <Mentors />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ai-search"
+              element={
+                <ProtectedRoute>
+                  <AISearch />
                 </ProtectedRoute>
               }
             />

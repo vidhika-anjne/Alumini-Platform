@@ -82,11 +82,15 @@ public class ChatController {
     @MessageMapping("/chat.status")
     public void updateStatus(@Payload MessageStatusUpdate update) {
         try {
+            System.out.println("DEBUG: Updating message " + update.getMessageId() + " to status " + update.getStatus());
+            
             MessageStatus status = MessageStatus.valueOf(update.getStatus());
             Message updatedMessage = messageService.updateStatus(update.getMessageId(), status);
             MessageResponse response = messageService.toDto(updatedMessage);
 
-            // Notify participants (excluding the one who updated if needed, but usually just notify all)
+            System.out.println("DEBUG: Broadcasting status update to conversation " + updatedMessage.getConversation().getId());
+            
+            // Notify all participants about the status change
             List<ConversationParticipant> participants = participantRepository.findByConversationId(updatedMessage.getConversation().getId());
             for (ConversationParticipant p : participants) {
                 messagingTemplate.convertAndSendToUser(
@@ -95,7 +99,12 @@ public class ChatController {
                     response
                 );
             }
-        } catch (Exception ignored) {}
+        } catch (IllegalArgumentException e) {
+            System.err.println("DEBUG: Invalid status value: " + update.getStatus());
+        } catch (Exception e) {
+            System.err.println("DEBUG: Error updating message status: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @MessageExceptionHandler

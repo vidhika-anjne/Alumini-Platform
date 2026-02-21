@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import api from '../api/client'
+import { getProfile, getConnectionStatus, sendConnectionRequest } from '../api/profile'
 import { useAuth } from '../context/AuthContext'
 
 export default function PublicProfile() {
@@ -15,24 +15,32 @@ export default function PublicProfile() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
+      setError('')
       try {
-        const url = type.toLowerCase() === 'alumni' 
-          ? `/api/v1/alumni/${enrollmentNumber}` 
-          : `/api/v1/students/${enrollmentNumber}`
+        // Use unified profile API
+        const response = await getProfile(enrollmentNumber)
         
-        const { data } = await api.get(url)
-        const profileData = data.alumni || data.student || data
-        setProfile(profileData)
+        if (response.success && response.profile) {
+          setProfile(response.profile)
 
-        // Check connection status
-        if (token && currentUser && enrollmentNumber !== currentUser.enrollmentNumber) {
-          const { data: status } = await api.get(`/api/v1/connections/status/${enrollmentNumber}`)
-          if (status.connected) setConnStatus('CONNECTED')
-          else if (status.pending) setConnStatus('PENDING')
-          else setConnStatus('NOT_CONNECTED')
+          // Check connection status
+          if (token && currentUser && enrollmentNumber !== currentUser.enrollmentNumber) {
+            try {
+              const status = await getConnectionStatus(enrollmentNumber)
+              if (status.connected) setConnStatus('CONNECTED')
+              else if (status.pending) setConnStatus('PENDING')
+              else setConnStatus('NOT_CONNECTED')
+            } catch (err) {
+              // Connection status check failed, but continue
+              setConnStatus('NOT_CONNECTED')
+            }
+          }
+        } else {
+          setError(response.message || 'Profile not found')
         }
       } catch (err) {
-        setError('Profile not found')
+        console.error('Error fetching profile:', err)
+        setError(err.response?.data?.message || 'Profile not found')
       } finally {
         setLoading(false)
       }
@@ -42,9 +50,11 @@ export default function PublicProfile() {
 
   const handleConnect = async () => {
     try {
-      await api.post('/api/v1/connections/request', null, { params: { receiverId: enrollmentNumber } })
+      await sendConnectionRequest(enrollmentNumber)
       setConnStatus('PENDING')
+      alert('Connection request sent successfully!')
     } catch (err) {
+      console.error('Error sending connection request:', err)
       alert(err.response?.data?.message || 'Failed to send request')
     }
   }
@@ -68,56 +78,62 @@ export default function PublicProfile() {
           )}
           <div>
             <h1 style={{ margin: 0 }}>{profile.name}</h1>
-            <p className="text-secondary">{profile.department} | {type.toUpperCase()}</p>
+            <p className="text-secondary">
+              {profile.department} | {profile.userType || type.toUpperCase()}
+              {profile.passingYear && ` | Class of ${profile.passingYear}`}
+              {profile.expectedPassingYear && ` | Expected ${profile.expectedPassingYear}`}
+            </p>
+            {profile.employmentStatus && (
+              <span className={`status-badge status-${profile.employmentStatus.toLowerCase()}`} style={{ marginTop: 8, display: 'inline-block' }}>
+                {profile.employmentStatus.replace(/_/g, ' ')}
+              </span>
+            )}
+            <p>{profile.bio || 'No bio provided.'}</p>
             <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
               {profile.githubUrl && <a href={profile.githubUrl} target="_blank" rel="noreferrer" className="button button-soft">GitHub</a>}
               {profile.linkedinUrl && <a href={profile.linkedinUrl} target="_blank" rel="noreferrer" className="button button-soft">LinkedIn</a>}
             </div>
+            {profile.skills && Array.isArray(profile.skills) && profile.skills.length > 0 && (
+              <div style={{ marginTop: 16 }}>
+                <h4 style={{ fontSize: '0.9rem', color: '#6b7280', marginBottom: 8 }}>Skills</h4>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {profile.skills.map((s, i) => <span key={i} className="badge">{s}</span>)}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="grid" style={{ gap: 24 }}>
-          <section>
-            <h3>About</h3>
-            <p>{profile.bio || 'No bio provided.'}</p>
-            {profile.skills && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
-                {Array.isArray(profile.skills) ? profile.skills.map(s => <span key={s} className="badge">{s}</span>) : profile.skills}
+        {type.toLowerCase() === 'alumni' && profile.experiences && profile.experiences.length > 0 && (
+          <section style={{ marginTop: 24 }}>
+            <h3>Experience</h3>
+            {profile.experiences.map((exp, i) => (
+              <div key={i} className="card-soft" style={{ marginBottom: 12 }}>
+                <strong>{exp.jobTitle}</strong> at <span>{exp.company}</span>
+                <div className="small text-secondary">{exp.duration}</div>
               </div>
-            )}
+            ))}
           </section>
+        )}
 
-          {type.toLowerCase() === 'alumni' && profile.experiences && (
-            <section>
-              <h3>Experience</h3>
-              {profile.experiences.map((exp, i) => (
-                <div key={i} className="card-soft" style={{ marginBottom: 12 }}>
-                  <strong>{exp.jobTitle}</strong> at <span>{exp.company}</span>
-                  <div className="small text-secondary">{exp.duration}</div>
-                </div>
-              ))}
-            </section>
+        <div style={{ marginTop: 24, borderTop: '1px solid var(--border)', paddingTop: 24, display: 'flex', gap: 12 }}>
+          {!isSelf && token && (
+            <>
+              {connStatus === 'NOT_CONNECTED' && (
+                <button className="button" onClick={handleConnect}>Connect</button>
+              )}
+              {connStatus === 'PENDING' && (
+                <button className="button button-soft" disabled>Request Pending</button>
+              )}
+              {connStatus === 'CONNECTED' && (
+                <>
+                  <button className="button button-soft" disabled>Connected ✅</button>
+                  <button className="button" onClick={() => navigate('/chat')}>Message</button>
+                </>
+              )}
+            </>
           )}
-
-          <div style={{ marginTop: 24, borderTop: '1px solid var(--border)', paddingTop: 24, display: 'flex', gap: 12 }}>
-            {!isSelf && token && (
-              <>
-                {connStatus === 'NOT_CONNECTED' && (
-                  <button className="button" onClick={handleConnect}>Connect</button>
-                )}
-                {connStatus === 'PENDING' && (
-                  <button className="button button-soft" disabled>Request Pending</button>
-                )}
-                {connStatus === 'CONNECTED' && (
-                  <>
-                    <button className="button button-soft" disabled>Connected ✅</button>
-                    <button className="button" onClick={() => navigate('/chat')}>Message</button>
-                  </>
-                )}
-              </>
-            )}
-            <button className="button button-soft" onClick={() => navigate(-1)}>Back</button>
-          </div>
+          <button className="button button-soft" onClick={() => navigate(-1)}>Back</button>
         </div>
       </div>
     </div>

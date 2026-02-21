@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import api from '../api/client'
+import { sendConnectionRequest } from '../api/profile'
 import { useAuth } from '../context/AuthContext'
 import AuthDebug from '../components/AuthDebug'
 
@@ -19,7 +20,9 @@ export default function Mentors() {
     if (!token || !currentId) return 'NONE'
     try {
       const { data } = await api.get(`/api/v1/connections/status/${otherUserId}`)
-      return data.connected ? 'CONNECTED' : 'NONE'
+      if (data.connected) return 'CONNECTED'
+      if (data.pending) return 'PENDING_SENT'
+      return 'NONE'
     } catch {
       return 'NONE'
     }
@@ -136,10 +139,10 @@ export default function Mentors() {
 
   useEffect(() => { fetchMentors() }, [token, currentId])
 
-  const sendConnectionRequest = async (alumni) => {
+  const handleConnect = async (alumni) => {
     if (!currentId || !token) return
     try {
-      await api.post(`/api/v1/connections/request/${alumni.enrollmentNumber}`)
+      await sendConnectionRequest(alumni.enrollmentNumber)
       setConnectionStatus(prev => ({ ...prev, [alumni.enrollmentNumber]: 'PENDING_SENT' }))
     } catch (e) {
       setError(e?.response?.data?.message || 'Failed to send connection request')
@@ -199,7 +202,7 @@ export default function Mentors() {
         </div>
       )
     }
-    return <button className="button" onClick={() => sendConnectionRequest(alumni)} disabled={!token}>Connect</button>
+    return <button className="button" onClick={() => handleConnect(alumni)} disabled={!token}>Connect</button>
   }
 
   return (

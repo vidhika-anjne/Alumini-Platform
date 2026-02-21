@@ -42,6 +42,7 @@ public class SecurityConfig {
           .antMatchers("/api/v1/students/register", "/api/v1/students/login").permitAll()
           .antMatchers("/api/v1/otp/**").permitAll()
           .antMatchers("/api/v1/auth/**").permitAll()
+          .antMatchers("/api/v1/embedding/health").permitAll()
           .antMatchers(HttpMethod.GET, "/api/v1/posts").permitAll()
           .antMatchers(HttpMethod.GET, "/api/v1/search").permitAll()
           .antMatchers("/ws-chat/**").permitAll()

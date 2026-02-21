@@ -270,8 +270,14 @@
 }
 
 .message-status {
-  color: #667781;
+  color: #8696a0; /* Default gray */
   margin-right: 4px;
+  transition: color 0.3s ease;
+}
+
+/* Blue color for READ status in conversation list */
+.message-status.status-read {
+  color: #53bdeb;
 }
 
 .preview-text {
@@ -455,7 +461,23 @@
 
 .message-meta .message-status {
   font-size: 13px;
-  color: #667781;
+  color: #8696a0; /* Gray for SENT/DELIVERED */
+  transition: color 0.3s ease;
+}
+
+/* Blue checkmarks for READ status (WhatsApp style) */
+.message-meta .message-status.status-read {
+  color: #53bdeb;
+}
+
+/* Subtle animation when status changes to READ */
+@keyframes readPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.message-meta .message-status.status-read {
+  animation: readPulse 0.3s ease-out;
 }
 
 /* Input Area */

@@ -321,10 +321,13 @@ export default function Chat() {
         client.subscribe('/user/queue/status', (frame) => {
           try {
             const update = JSON.parse(frame.body)
+            console.log('📬 Received status update:', update.id, '→', update.status);
             if (update.conversationId === selectedConv.id) {
               setMessages((prev) => prev.map((m) => (m.id === update.id ? update : m)))
             }
-          } catch (e) {}
+          } catch (e) {
+            console.error('❌ Error processing status update:', e)
+          }
         })
         
         // Subscribe to errors
@@ -364,6 +367,69 @@ export default function Chat() {
       setIsConnected(false)
     }
   }, [token, selectedConv, baseURL])
+
+  // Mark received messages as DELIVERED when conversation is opened
+  useEffect(() => {
+    if (!selectedConv || !stompRef.current?.connected || !currentId || messages.length === 0) return
+    
+    // Find messages from others that are still in SENT status
+    const undeliveredMessages = messages.filter(m => 
+      String(m.senderId) !== String(currentId) && 
+      m.status === 'SENT'
+    )
+    
+    if (undeliveredMessages.length > 0) {
+      console.log('📬 Marking', undeliveredMessages.length, 'messages as DELIVERED');
+      
+      // Batch update with slight delay to avoid overwhelming server
+      undeliveredMessages.forEach((m, idx) => {
+        setTimeout(() => {
+          stompRef.current.publish({
+            destination: '/app/chat.status',
+            body: JSON.stringify({
+              messageId: m.id,
+              conversationId: selectedConv.id,
+              status: 'DELIVERED'
+            })
+          })
+        }, idx * 50) // 50ms delay between each update
+      })
+    }
+  }, [selectedConv, messages, currentId])
+
+  // Mark messages as READ when they are visible in viewport
+  useEffect(() => {
+    if (!selectedConv || !stompRef.current?.connected || !currentId || messages.length === 0) return
+    
+    // Find messages from others that are DELIVERED but not READ
+    const deliveredMessages = messages.filter(m => 
+      String(m.senderId) !== String(currentId) && 
+      m.status === 'DELIVERED'
+    )
+    
+    if (deliveredMessages.length === 0) return
+    
+    // Mark all as READ since user has the conversation open
+    // In a real app, you'd use IntersectionObserver to detect actual visibility
+    console.log('👁️ Marking', deliveredMessages.length, 'messages as READ');
+    
+    const markAsReadTimer = setTimeout(() => {
+      deliveredMessages.forEach((m, idx) => {
+        setTimeout(() => {
+          stompRef.current?.publish({
+            destination: '/app/chat.status',
+            body: JSON.stringify({
+              messageId: m.id,
+              conversationId: selectedConv.id,
+              status: 'READ'
+            })
+          })
+        }, idx * 50)
+      })
+    }, 500) // Small delay to simulate reading time
+    
+    return () => clearTimeout(markAsReadTimer)
+  }, [selectedConv, messages, currentId])
 
   const sendMessage = () => {
     const content = input.trim()
@@ -603,7 +669,9 @@ export default function Chat() {
                         {conv.lastMessage ? (
                           <>
                             {conv.lastMessage.senderId === currentId && (
-                              <span className="message-status">{getStatusIcon(conv.lastMessage.status)} </span>
+                              <span className={`message-status status-${conv.lastMessage.status?.toLowerCase()}`}>
+                                {getStatusIcon(conv.lastMessage.status)}{' '}
+                              </span>
                             )}
                             <span className="preview-text">
                               {conv.lastMessage.content?.substring(0, 40)}
@@ -700,11 +768,11 @@ export default function Chat() {
                           )}
                           {!showAvatar && !isMe && <div className="message-avatar-spacer" />}
                           
-                          <div className={`message-bubble ${isMe ? 'my-message' : 'their-message'}`}>
+                          <div className={`message-bubble ${isMe ? 'my-message' : 'their-message'}`} data-status={m.status}>
                             <div className="message-content">{m.content}</div>
                             <div className="message-meta">
                               <span className="message-time">{formatTime(m.sentAt)}</span>
-                              {isMe && <span className="message-status">{getStatusIcon(m.status)}</span>}
+                              {isMe && <span className={`message-status status-${m.status?.toLowerCase()}`}>{getStatusIcon(m.status)}</span>}
                             </div>
                           </div>
                         </div>
