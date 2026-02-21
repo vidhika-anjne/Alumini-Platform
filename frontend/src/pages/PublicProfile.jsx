@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import api from '../api/client'
+import { getProfile, getConnectionStatus, sendConnectionRequest } from '../api/profile'
 import { useAuth } from '../context/AuthContext'
 
 export default function PublicProfile() {
@@ -15,24 +15,32 @@ export default function PublicProfile() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
+      setError('')
       try {
-        const url = type.toLowerCase() === 'alumni' 
-          ? `/api/v1/alumni/${enrollmentNumber}` 
-          : `/api/v1/students/${enrollmentNumber}`
+        // Use unified profile API
+        const response = await getProfile(enrollmentNumber)
         
-        const { data } = await api.get(url)
-        const profileData = data.alumni || data.student || data
-        setProfile(profileData)
+        if (response.success && response.profile) {
+          setProfile(response.profile)
 
-        // Check connection status
-        if (token && currentUser && enrollmentNumber !== currentUser.enrollmentNumber) {
-          const { data: status } = await api.get(`/api/v1/connections/status/${enrollmentNumber}`)
-          if (status.connected) setConnStatus('CONNECTED')
-          else if (status.pending) setConnStatus('PENDING')
-          else setConnStatus('NOT_CONNECTED')
+          // Check connection status
+          if (token && currentUser && enrollmentNumber !== currentUser.enrollmentNumber) {
+            try {
+              const status = await getConnectionStatus(enrollmentNumber)
+              if (status.connected) setConnStatus('CONNECTED')
+              else if (status.pending) setConnStatus('PENDING')
+              else setConnStatus('NOT_CONNECTED')
+            } catch (err) {
+              // Connection status check failed, but continue
+              setConnStatus('NOT_CONNECTED')
+            }
+          }
+        } else {
+          setError(response.message || 'Profile not found')
         }
       } catch (err) {
-        setError('Profile not found')
+        console.error('Error fetching profile:', err)
+        setError(err.response?.data?.message || 'Profile not found')
       } finally {
         setLoading(false)
       }
@@ -42,9 +50,11 @@ export default function PublicProfile() {
 
   const handleConnect = async () => {
     try {
-      await api.post('/api/v1/connections/request', null, { params: { receiverId: enrollmentNumber } })
+      await sendConnectionRequest(enrollmentNumber)
       setConnStatus('PENDING')
+      alert('Connection request sent successfully!')
     } catch (err) {
+      console.error('Error sending connection request:', err)
       alert(err.response?.data?.message || 'Failed to send request')
     }
   }
@@ -75,8 +85,18 @@ export default function PublicProfile() {
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{profile.name}</h1>
             <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
-              {profile.department} • {type.toUpperCase()}
+              
+              {profile.department} • {profile.userType || type.toUpperCase()}
+            
+              {profile.passingYear && ` | Class of ${profile.passingYear}`}
+              {profile.expectedPassingYear && ` | Expected ${profile.expectedPassingYear}`}
             </p>
+            {profile.employmentStatus && (
+              <span className={`status-badge status-${profile.employmentStatus.toLowerCase()}`} style={{ marginTop: 8, display: 'inline-block' }}>
+                {profile.employmentStatus.replace(/_/g, ' ')}
+              </span>
+            )}
+            <p>{profile.bio || 'No bio provided.'}</p>
             <div className="mt-4 flex flex-wrap gap-3">
               {profile.githubUrl && (
                 <a href={profile.githubUrl} target="_blank" rel="noreferrer" className="inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-indigo-500 hover:text-indigo-600 dark:border-slate-600 dark:text-slate-200">
@@ -89,6 +109,14 @@ export default function PublicProfile() {
                 </a>
               )}
             </div>
+            {profile.skills && Array.isArray(profile.skills) && profile.skills.length > 0 && (
+              <div style={{ marginTop: 16 }}>
+                <h4 style={{ fontSize: '0.9rem', color: '#6b7280', marginBottom: 8 }}>Skills</h4>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {profile.skills.map((s, i) => <span key={i} className="badge">{s}</span>)}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

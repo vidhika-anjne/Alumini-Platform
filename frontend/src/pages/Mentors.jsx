@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import api from '../api/client'
+import { sendConnectionRequest } from '../api/profile'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import AuthDebug from '../components/AuthDebug'
@@ -70,9 +71,23 @@ export default function Mentors() {
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [connectionStatus, setConnectionStatus] = useState({})
-  const [pendingRequests, setPendingRequests] = useState([])
+  const [connectionStatus, setConnectionStatus] = useState({}) // { alumniEnrollment: 'NONE' | 'PENDING' | 'CONNECTED' | 'RECEIVED' }
+  const [pendingRequests, setPendingRequests] = useState([]) // Requests sent TO current user
 
+  // Fetch connection status for a specific user
+  const fetchConnectionStatus = useCallback(async (otherUserId) => {
+    if (!token || !currentId) return 'NONE'
+    try {
+      const { data } = await api.get(`/api/v1/connections/status/${otherUserId}`)
+      if (data.connected) return 'CONNECTED'
+      if (data.pending) return 'PENDING_SENT'
+      return 'NONE'
+    } catch {
+      return 'NONE'
+    }
+  }, [token, currentId])
+
+  // Fetch pending requests (where current user is receiver)
   const fetchPendingRequests = useCallback(async () => {
     if (!token) return
     try {
@@ -167,11 +182,11 @@ export default function Mentors() {
 
   useEffect(() => { fetchMentors() }, [token, currentId])
 
-  const sendConnectionRequest = async (alumni) => {
+  const handleConnect = async (alumni) => {
     if (!currentId || !token) return
     try {
-      await api.post(`/api/v1/connections/request/${alumni.enrollmentNumber}`)
-      setConnectionStatus((prev) => ({ ...prev, [alumni.enrollmentNumber]: 'PENDING_SENT' }))
+      await sendConnectionRequest(alumni.enrollmentNumber)
+      setConnectionStatus(prev => ({ ...prev, [alumni.enrollmentNumber]: 'PENDING_SENT' }))
     } catch (e) {
       setError(e?.response?.data?.message || 'Failed to send connection request')
     }
@@ -254,11 +269,7 @@ export default function Mentors() {
         </div>
       )
     }
-    return (
-      <button type="button" className={secondaryButton} onClick={() => sendConnectionRequest(alumni)} disabled={!token}>
-        Connect
-      </button>
-    )
+    return <button className="button" onClick={() => handleConnect(alumni)} disabled={!token}>Connect</button>
   }
 
   const subtleText = isDark ? 'text-slate-400' : 'text-slate-500'

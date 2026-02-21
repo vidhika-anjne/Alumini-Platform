@@ -141,8 +141,12 @@ export default function Navbar() {
           )}
         </div>
       </div>
-
-      <div className={`md:hidden ${open ? 'max-h-[600px] opacity-100' : 'pointer-events-none max-h-0 opacity-0'} overflow-hidden border-t border-slate-200 bg-sky-50/95 px-4 pb-4 shadow-sm transition-all duration-300 dark:border-slate-800 dark:bg-slate-950/95`}>
+      <nav className={`nav ${open ? 'open' : ''}`}>
+        <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'active' : ''}>Dashboard</NavLink>
+        <NavLink to="/feed" className={({ isActive }) => isActive ? 'active' : ''}>Feed</NavLink>
+        {token && <NavLink to="/mentors" className={({ isActive }) => isActive ? 'active' : ''}>Mentors</NavLink>}
+        {token && <NavLink to="/ai-search" className={({ isActive }) => isActive ? 'active' : ''}>🤖 AI Search</NavLink>}
+        {token && <NavLink to="/chat" className={({ isActive }) => isActive ? 'active' : ''}>Chat</NavLink>}
         {token && (
           <div className="py-4">
             <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/80 p-3 dark:border-slate-700 dark:bg-slate-900/60">

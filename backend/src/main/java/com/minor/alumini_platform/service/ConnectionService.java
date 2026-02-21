@@ -107,6 +107,12 @@ public class ConnectionService {
                 .orElse(false);
     }
 
+    public boolean isRequestPending(String userId1, String userId2) {
+        return connectionRepository.findConnectionBetween(userId1, userId2)
+                .map(c -> c.getStatus() == ConnectionStatus.PENDING)
+                .orElse(false);
+    }
+
     public List<Connection> getPendingRequests(String userId) {
         return connectionRepository.findByReceiverIdAndStatus(userId, ConnectionStatus.PENDING);
     }

@@ -7,6 +7,7 @@ import PublicProfile from './pages/PublicProfile'
 import Chat from './pages/Chat'
 import Mentors from './pages/Mentors'
 import Notifications from './pages/Notifications'
+import AISearch from './pages/AISearch'
 import Navbar from './components/Navbar'
 import ProtectedRoute from './components/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -27,6 +28,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <Mentors />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ai-search"
+              element={
+                <ProtectedRoute>
+                  <AISearch />
                 </ProtectedRoute>
               }
             />

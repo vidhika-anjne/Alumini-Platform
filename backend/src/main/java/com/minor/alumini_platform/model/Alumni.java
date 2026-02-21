@@ -49,6 +49,10 @@ public class Alumni {
     @JsonManagedReference
     private List<Post> posts;
 
+    // Store pre-computed embeddings as JSON string for performance
+    @Column(columnDefinition = "TEXT")
+    private String embeddingVector;
+
     @Transient
     private String otp;
 
@@ -171,6 +175,14 @@ public class Alumni {
 
     public void setOtp(String otp) {
         this.otp = otp;
+    }
+
+    public String getEmbeddingVector() {
+        return embeddingVector;
+    }
+
+    public void setEmbeddingVector(String embeddingVector) {
+        this.embeddingVector = embeddingVector;
     }
 
 }

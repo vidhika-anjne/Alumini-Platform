@@ -84,8 +84,16 @@ public class ConnectionController {
     @GetMapping("/status/{otherUserId}")
     public ResponseEntity<Map<String, Object>> getStatus(Principal principal, @PathVariable String otherUserId) {
         Map<String, Object> response = new HashMap<>();
-        boolean connected = connectionService.areConnected(principal.getName(), otherUserId);
+        String currentUserId = principal.getName();
+        
+        boolean connected = connectionService.areConnected(currentUserId, otherUserId);
+        
+        // Also check for pending requests
+        boolean pending = connectionService.isRequestPending(currentUserId, otherUserId);
+        
         response.put("connected", connected);
+        response.put("pending", pending);
+        
         return ResponseEntity.ok(response);
     }
 }
