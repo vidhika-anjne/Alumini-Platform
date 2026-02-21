@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import { sendConnectionRequest } from '../api/profile'
 import { useAuth } from '../context/AuthContext'
@@ -64,6 +65,7 @@ const getStatusBadge = (status, isDark) => {
 export default function Mentors() {
   const { token, user } = useAuth()
   const { theme } = useTheme()
+  const navigate = useNavigate()
   const isDark = theme === 'dark'
   const currentId = useMemo(() => (user?.enrollmentNumber || user?.alumniId || user?.id || ''), [user])
 
@@ -384,7 +386,8 @@ export default function Mentors() {
               return (
                 <article
                   key={mentor.id}
-                  className={`rounded-3xl p-6 ${
+                  onClick={() => navigate(`/profile/alumni/${mentor.enrollmentNumber}`)}
+                  className={`cursor-pointer rounded-3xl p-6 transition hover:ring-2 hover:ring-indigo-400/60 ${
                     isDark
                       ? 'border border-slate-800 bg-slate-900/75 shadow-[0_25px_80px_rgba(2,6,23,0.7)]'
                       : 'bg-white shadow-lg shadow-slate-200/60'
@@ -434,7 +437,10 @@ export default function Mentors() {
                     ))}
                   </div>
 
-                  <div className={`mt-6 border-t pt-4 ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
+                  <div
+                    className={`mt-6 border-t pt-4 ${isDark ? 'border-slate-800' : 'border-slate-100'}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     {renderConnectionButton(mentor)}
                   </div>
                 </article>

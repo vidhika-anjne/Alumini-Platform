@@ -110,3 +110,6 @@ backend/src/test/resources/application.properties
 *.swo
 *.orig
 *.bak
+.venv
+.github
+.vscode

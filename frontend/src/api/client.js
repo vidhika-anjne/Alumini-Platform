@@ -14,9 +14,6 @@ api.interceptors.request.use(
     
     if (token && token.trim() !== '') {
       config.headers.Authorization = `Bearer ${token}`
-      console.log('- Authorization header set:', config.headers.Authorization?.substring(0, 30) + '...')
-    } else {
-      console.warn('- No valid token found, request will be unauthenticated')
     }
     
     return config
@@ -32,18 +29,20 @@ api.interceptors.response.use(
     return response
   },
   (error) => {
-  //   console.error('API Response Error:')
-  //   console.error('- Status:', error.response?.status)
-  //   console.error('- Data:', error.response?.data)
-  //   console.error('- Headers:', error.response?.headers)
-    
-    if (error.response?.status === 401) {
-      console.warn('Unauthorized request - token may be invalid or expired')
-      // Optional: Clear invalid token
-      // localStorage.removeItem('token')
-      // window.location.href = '/login'
+    const status = error.response?.status
+
+    if (status === 401 || status === 403) {
+      console.warn('Authentication failed — clearing session and redirecting to login')
+      localStorage.removeItem('token')
+      localStorage.removeItem('userType')
+      localStorage.removeItem('user')
+      // Only redirect if not already on auth pages to avoid redirect loops
+      const path = window.location.pathname
+      if (path !== '/login' && path !== '/register') {
+        window.location.href = '/login'
+      }
     }
-    
+
     return Promise.reject(error)
   }
 )

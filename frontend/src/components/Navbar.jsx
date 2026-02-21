@@ -82,6 +82,7 @@ export default function Navbar() {
         <nav className="hidden items-center gap-1 md:flex">
           <NavLink to="/feed" className={desktopLinkClass}>Feed</NavLink>
           {token && <NavLink to="/mentors" className={desktopLinkClass}>Mentors</NavLink>}
+          {token && <NavLink to="/ai-search" className={desktopLinkClass}>🤖 AI Search</NavLink>}
           {token && <NavLink to="/chat" className={desktopLinkClass}>Chat</NavLink>}
           {token && (
             <NavLink to="/notifications" className={desktopLinkClass}>
