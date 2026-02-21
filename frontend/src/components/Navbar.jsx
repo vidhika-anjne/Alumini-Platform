@@ -141,61 +141,65 @@ export default function Navbar() {
           )}
         </div>
       </div>
-      <nav className={`nav ${open ? 'open' : ''}`}>
-        <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'active' : ''}>Dashboard</NavLink>
-        <NavLink to="/feed" className={({ isActive }) => isActive ? 'active' : ''}>Feed</NavLink>
-        {token && <NavLink to="/mentors" className={({ isActive }) => isActive ? 'active' : ''}>Mentors</NavLink>}
-        {token && <NavLink to="/ai-search" className={({ isActive }) => isActive ? 'active' : ''}>🤖 AI Search</NavLink>}
-        {token && <NavLink to="/chat" className={({ isActive }) => isActive ? 'active' : ''}>Chat</NavLink>}
-        {token && (
-          <div className="py-4">
-            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/80 p-3 dark:border-slate-700 dark:bg-slate-900/60">
-              {user?.avatarUrl ? (
-                <img src={user.avatarUrl} alt="Avatar" className="h-12 w-12 rounded-full object-cover" />
-              ) : (
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500 text-lg font-semibold text-white">
-                  {avatar}
+      {/* Mobile drawer */}
+      <div
+        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+          open ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
+        }`}
+      >
+        <div className="border-t border-slate-200 dark:border-slate-800 px-4 pb-4 pt-3 space-y-2">
+          {token && (
+            <div className="pb-3">
+              <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/80 p-3 dark:border-slate-700 dark:bg-slate-900/60">
+                {user?.avatarUrl ? (
+                  <img src={user.avatarUrl} alt="Avatar" className="h-12 w-12 rounded-full object-cover" />
+                ) : (
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-500 text-lg font-semibold text-white">
+                    {avatar}
+                  </div>
+                )}
+                <div className="flex-1">
+                  <p className="font-semibold text-slate-900 dark:text-white">{user?.name || user?.enrollmentNumber}</p>
+                  <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{userType}</p>
                 </div>
-              )}
-              <div className="flex-1">
-                <p className="font-semibold text-slate-900 dark:text-white">{user?.name || user?.enrollmentNumber}</p>
-                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{userType}</p>
               </div>
             </div>
-          </div>
-        )}
-
-        <nav className="flex flex-col gap-2 py-3">
-          <NavLink to="/feed" className={mobileLinkClass}>Feed</NavLink>
-          {token && <NavLink to="/mentors" className={mobileLinkClass}>Mentors</NavLink>}
-          {token && <NavLink to="/chat" className={mobileLinkClass}>Chat</NavLink>}
-          {token && (
-            <NavLink to="/notifications" className={mobileLinkClass}>
-              Notifications
-              {notificationCount > 0 && (
-                <span className="ml-2 inline-flex min-w-[32px] items-center justify-center rounded-full bg-rose-500 px-2 text-xs font-semibold text-white">
-                  {notificationCount > 99 ? '99+' : notificationCount}
-                </span>
-              )}
-            </NavLink>
           )}
-          {token && <NavLink to="/profile" className={mobileLinkClass}>Profile</NavLink>}
-          {!token && <NavLink to="/login" className={mobileLinkClass}>Login</NavLink>}
-          {!token && <NavLink to="/register" className={mobileLinkClass}>Register</NavLink>}
-        </nav>
 
-        {token && (
-          <div className="space-y-3">
-            <SearchField className="mt-2" />
-            <button
-              className="w-full rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-indigo-500 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
+          <div className="flex flex-col gap-1">
+            <NavLink to="/feed" className={mobileLinkClass}>Feed</NavLink>
+            {token && <NavLink to="/mentors" className={mobileLinkClass}>Mentors</NavLink>}
+            {token && <NavLink to="/ai-search" className={mobileLinkClass}>🤖 AI Search</NavLink>}
+            {token && <NavLink to="/chat" className={mobileLinkClass}>Chat</NavLink>}
+            {token && (
+              <NavLink to="/notifications" className={mobileLinkClass}>
+                Notifications
+                {notificationCount > 0 && (
+                  <span className="ml-2 inline-flex min-w-[32px] items-center justify-center rounded-full bg-rose-500 px-2 text-xs font-semibold text-white">
+                    {notificationCount > 99 ? '99+' : notificationCount}
+                  </span>
+                )}
+              </NavLink>
+            )}
+            {token && <NavLink to="/profile" className={mobileLinkClass}>Profile</NavLink>}
+            {!token && <NavLink to="/login" className={mobileLinkClass}>Login</NavLink>}
+            {!token && <NavLink to="/register" className={mobileLinkClass}>Register</NavLink>}
           </div>
-        )}
+
+          {token && (
+            <div className="space-y-3 pt-2">
+              <SearchField />
+              <button
+                className="w-full rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-indigo-500 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
+
   )
 }
