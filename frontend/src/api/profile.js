@@ -60,3 +60,23 @@ export const sendConnectionRequest = async (receiverEnrollment) => {
   const response = await api.post(`/api/v1/connections/request/${receiverEnrollment}`)
   return response.data
 }
+
+/**
+ * Get posts for a user
+ * @param {string} enrollmentNumber - The user's enrollment number
+ * @returns {Promise} User's posts
+ */
+export const getPostsForUser = async (enrollmentNumber) => {
+  const response = await api.get(`/api/v1/posts/user/${enrollmentNumber}`)
+  return response.data
+}
+
+/**
+ * Delete a post
+ * @param {number} postId - The ID of the post to delete
+ * @returns {Promise} Response
+ */
+export const deletePost = async (postId) => {
+    const response = await api.delete(`/api/v1/posts/${postId}`)
+    return response.data
+}

@@ -228,18 +228,6 @@ export default function Feed() {
                 }}
                 initialPrompt={postPrompt}
               />
-              <div className="flex flex-wrap gap-3">
-                {promptSuggestions.slice(0, 3).map((suggestion) => (
-                  <button
-                    key={suggestion.title}
-                    type="button"
-                    onClick={() => handleSuggestionClick(suggestion)}
-                    className="rounded-full bg-sky-100 px-4 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-sky-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                  >
-                    {suggestion.icon} {suggestion.title}
-                  </button>
-                ))}
-              </div>
             </section>
           )}
 

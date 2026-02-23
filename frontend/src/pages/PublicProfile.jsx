@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getProfile, getConnectionStatus, sendConnectionRequest } from '../api/profile'
+import { getProfile, getConnectionStatus, sendConnectionRequest, getPostsForUser, deletePost } from '../api/profile'
 import { useAuth } from '../context/AuthContext'
 
 export default function PublicProfile() {
@@ -8,6 +8,7 @@ export default function PublicProfile() {
   const { user: currentUser, token } = useAuth()
   const navigate = useNavigate()
   const [profile, setProfile] = useState(null)
+  const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [connStatus, setConnStatus] = useState('NOT_CONNECTED') // NOT_CONNECTED, PENDING, CONNECTED
@@ -22,6 +23,19 @@ export default function PublicProfile() {
         
         if (response.success && response.profile) {
           setProfile(response.profile)
+
+          // Fetch posts
+          if (response.profile.userType === 'ALUMNI') {
+            try {
+              const postsResponse = await getPostsForUser(enrollmentNumber);
+              if (postsResponse.success) {
+                setPosts(postsResponse.posts);
+              }
+            } catch (err) {
+              console.error('Error fetching posts:', err);
+              // Don't block profile rendering if posts fail
+            }
+          }
 
           // Check connection status
           if (token && currentUser && enrollmentNumber !== currentUser.enrollmentNumber) {
@@ -58,6 +72,23 @@ export default function PublicProfile() {
       alert(err.response?.data?.message || 'Failed to send request')
     }
   }
+
+  const handleDeletePost = async (postId) => {
+    if (window.confirm('Are you sure you want to delete this post?')) {
+      try {
+        const response = await deletePost(postId);
+        if (response.success) {
+          setPosts(posts.filter((p) => p.id !== postId));
+          alert('Post deleted successfully!');
+        } else {
+          alert(response.message || 'Failed to delete post.');
+        }
+      } catch (err) {
+        console.error('Error deleting post:', err);
+        alert(err.response?.data?.message || 'Failed to delete post.');
+      }
+    }
+  };
 
   if (loading) {
     return <div className="mx-auto max-w-5xl px-4 py-10 text-center text-sm text-slate-500">Loading profile…</div>
@@ -181,6 +212,34 @@ export default function PublicProfile() {
               Back
             </button>
           </div>
+
+          {/* Posts Section */}
+          {posts.length > 0 && (
+            <div className="mt-10">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Posts</h2>
+              <div className="mt-4 space-y-6">
+                {posts.map((post) => (
+                  <div key={post.id} className="relative rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <p className="text-slate-800 dark:text-slate-200">{post.content}</p>
+                    <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
+                      {new Date(post.createdAt).toLocaleString()}
+                    </p>
+                    {isSelf && (
+                      <button
+                        onClick={() => handleDeletePost(post.id)}
+                        className="absolute top-2 right-2 rounded-full bg-red-500 p-1.5 text-white transition hover:bg-red-600"
+                        aria-label="Delete post"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -55,21 +55,15 @@ export default function PostForm({ onCreated, initialPrompt = "" }) {
       onSubmit={submit}
       className="mb-4 space-y-4 rounded-3xl border border-sky-100 bg-sky-50/90 p-5 shadow-lg shadow-indigo-500/5 dark:border-slate-800 dark:bg-slate-950/70"
     >
-      <div className="flex items-center justify-between">
-        <h4 className="text-lg font-semibold text-slate-900 dark:text-white">Create Post</h4>
-      </div>
-
-      <p className="text-sm text-slate-500 ">Share updates, advice, or experiences with your juniors.</p>
-
       <textarea
         className="w-full rounded-2xl border border-sky-100 bg-sky-50/80 px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 dark:border-slate-700 dark:bg-slate-900/60 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-300 dark:focus:ring-indigo-500/30"
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        rows={3}
+        rows={1}
         placeholder={"What's happening?"}
       />
 
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-center gap-2">
         <label className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
           Attach image or video
           <input
@@ -80,7 +74,7 @@ export default function PostForm({ onCreated, initialPrompt = "" }) {
           />
         </label>
         <button
-          className="ml-auto inline-flex items-center rounded-full bg-indigo-600 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:bg-indigo-500 disabled:opacity-50"
+          className="ml-auto inline-flex items-center rounded-full bg-indigo-600 px-6 py-1 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:bg-indigo-500 disabled:opacity-50"
           disabled={loading}
           type="submit"
         >
