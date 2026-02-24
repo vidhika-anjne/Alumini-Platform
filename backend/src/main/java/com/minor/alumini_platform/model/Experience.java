@@ -5,7 +5,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Data
@@ -26,6 +26,6 @@ public class Experience {
 
     @ManyToOne
     @JoinColumn(name = "alumni_id")
-    @JsonBackReference
+    @JsonIgnoreProperties("experiences")
     private Alumni alumni;
 }

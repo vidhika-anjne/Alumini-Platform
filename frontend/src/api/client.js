@@ -26,6 +26,25 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => {
+    // Recursively ensure all Cloudinary URLs use HTTPS to prevent tracking prevention issues
+    const ensureSecureUrl = (obj) => {
+      if (!obj || typeof obj !== 'object') return obj
+      if (Array.isArray(obj)) {
+        return obj.map(ensureSecureUrl)
+      }
+      for (const key in obj) {
+        if (typeof obj[key] === 'string' && obj[key].startsWith('http://res.cloudinary.com/')) {
+          obj[key] = obj[key].replace('http://', 'https://')
+        } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+          ensureSecureUrl(obj[key])
+        }
+      }
+      return obj
+    }
+
+    if (response.data) {
+      ensureSecureUrl(response.data)
+    }
     return response
   },
   (error) => {

@@ -581,7 +581,7 @@ export default function Chat() {
     : 'radial-gradient(circle at 10% 15%, rgba(56,189,248,0.18), transparent 45%)'
 
   return (
-    <div className={`relative isolate min-h-[calc(100vh-80px)] overflow-hidden ${themed('bg-slate-950 text-slate-50','bg-sky-50 text-slate-900')}`}>
+    <div className={`relative isolate h-[calc(100vh-64px)] overflow-hidden ${themed('bg-slate-950 text-slate-50','bg-sky-50 text-slate-900')}`}>
       <div
         className={`pointer-events-none absolute inset-0 ${themed(
           'bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_55%)]',
@@ -594,7 +594,7 @@ export default function Chat() {
           'bg-[radial-gradient(circle_at_20%_80%,_rgba(14,165,233,0.15),_transparent_45%)]'
         )}`}
       />
-      <div className="relative mx-auto flex h-full min-h-[calc(100vh-80px)] max-w-6xl flex-col gap-6 px-4 py-6 lg:flex-row lg:px-8">
+      <div className="relative mx-auto flex h-full max-w-6xl flex-col gap-4 px-4 py-4 lg:flex-row lg:gap-6 lg:px-8">
         {/* Sidebar */}
         <aside
           className={`order-2 flex flex-col rounded-3xl border p-5 shadow-[0_25px_60px_rgba(2,6,23,0.6)] backdrop-blur-2xl lg:order-1 lg:h-full lg:w-80 ${themed(
@@ -774,7 +774,7 @@ export default function Chat() {
 
         {/* Chat Area */}
         <section
-          className={`order-1 flex flex-1 flex-col overflow-hidden rounded-3xl border shadow-[0_25px_60px_rgba(2,6,23,0.65)] backdrop-blur-3xl lg:order-2 ${themed(
+          className={`order-1 flex h-full flex-1 flex-col overflow-hidden rounded-3xl border shadow-[0_25px_60px_rgba(2,6,23,0.65)] backdrop-blur-3xl lg:order-2 ${themed(
             'border-white/10 bg-slate-900/30 text-slate-50',
             'border-slate-200 bg-white/90 text-slate-900'
           )}`}

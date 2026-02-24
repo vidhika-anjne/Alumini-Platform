@@ -27,12 +27,11 @@ export default function PublicProfile() {
           // Fetch posts
           if (response.profile.userType === 'ALUMNI') {
             try {
-              const postsResponse = await getPostsForUser(enrollmentNumber);
-              if (postsResponse.success) {
-                setPosts(postsResponse.posts);
-              }
+              const data = await getPostsForUser(enrollmentNumber)
+              const items = Array.isArray(data) ? data : data?.content || data?.posts || []
+              setPosts(items)
             } catch (err) {
-              console.error('Error fetching posts:', err);
+              console.error('Error fetching posts:', err)
               // Don't block profile rendering if posts fail
             }
           }
@@ -216,18 +215,42 @@ export default function PublicProfile() {
           {/* Posts Section */}
           {posts.length > 0 && (
             <div className="mt-10">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Posts</h2>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Recent Posts</h2>
               <div className="mt-4 space-y-6">
                 {posts.map((post) => (
-                  <div key={post.id} className="relative rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                    <p className="text-slate-800 dark:text-slate-200">{post.content}</p>
-                    <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
-                      {new Date(post.createdAt).toLocaleString()}
-                    </p>
+                  <div key={post.id} className="relative rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <div className="flex items-center gap-3 mb-4">
+                      {profile.avatarUrl ? (
+                        <img src={profile.avatarUrl} alt={profile.name} className="h-10 w-10 rounded-full object-cover" />
+                      ) : (
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-500 text-sm font-bold text-white">
+                          {(profile.name || 'U').charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">{profile.name}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {new Date(post.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <p className="text-slate-800 dark:text-slate-200 leading-relaxed">{post.content}</p>
+                    
+                    {post.mediaUrl && (
+                      <div className="mt-4 overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800">
+                        {post.mediaUrl.match(/\.mp4|\.webm$/i) ? (
+                          <video src={post.mediaUrl} controls className="w-full" />
+                        ) : (
+                          <img src={post.mediaUrl} alt="Post content" className="w-full object-cover" />
+                        )}
+                      </div>
+                    )}
+
                     {isSelf && (
                       <button
                         onClick={() => handleDeletePost(post.id)}
-                        className="absolute top-2 right-2 rounded-full bg-red-500 p-1.5 text-white transition hover:bg-red-600"
+                        className="absolute top-4 right-4 rounded-full bg-rose-50 p-1.5 text-rose-500 transition hover:bg-rose-500 hover:text-white dark:bg-rose-500/10"
                         aria-label="Delete post"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">

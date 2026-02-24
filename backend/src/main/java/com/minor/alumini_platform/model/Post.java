@@ -1,7 +1,8 @@
 package com.minor.alumini_platform.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "posts")
@@ -18,8 +19,15 @@ public class Post {
 
     @ManyToOne
     @JoinColumn(name = "alumni_id", nullable = false)
-    @JsonBackReference
+    @JsonIgnoreProperties("posts")
     private Alumni alumni; // who created the post
+
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 
 
     // Getters and setters
@@ -34,4 +42,7 @@ public class Post {
 
     public Alumni getAlumni() { return alumni; }
     public void setAlumni(Alumni alumni) { this.alumni = alumni; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

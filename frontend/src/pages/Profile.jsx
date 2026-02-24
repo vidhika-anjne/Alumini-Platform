@@ -2,11 +2,15 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/client'
+import { getPostsForUser } from '../api/profile'
 import AlumniStatusBanner from '../components/AlumniStatusBanner'
+import { useTheme } from '../context/ThemeContext'
+import PostForm from '../components/PostForm'
 
 export default function Profile() {
   const navigate = useNavigate()
   const { userType, user, updateUser, deleteAccount } = useAuth()
+  const { theme } = useTheme()
   const [profile, setProfile] = useState(user || null)
   const [msg, setMsg] = useState('')
   const [avatarFile, setAvatarFile] = useState(null)
@@ -17,6 +21,10 @@ export default function Profile() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteError, setDeleteError] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false)
+  const [userPosts, setUserPosts] = useState([])
+  const [loadingPosts, setLoadingPosts] = useState(false)
 
   const inputClasses =
     'mt-2 w-full rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900/60 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-300 dark:focus:ring-indigo-500/30'
@@ -28,6 +36,58 @@ export default function Profile() {
   const normalizedUserType = (userType || '').toLowerCase()
   const apiBase = normalizedUserType === 'alumni' ? '/api/v1/alumni' : '/api/v1/students'
   const enrollmentNumber = profile?.enrollmentNumber
+
+  useEffect(() => {
+    setProfile(user || null)
+  }, [user])
+
+  useEffect(() => {
+    if (enrollmentNumber) {
+      fetchUserPosts()
+    }
+  }, [enrollmentNumber])
+
+  const fetchUserPosts = async () => {
+    setLoadingPosts(true)
+    try {
+      const data = await getPostsForUser(enrollmentNumber)
+      setUserPosts(Array.isArray(data) ? data : data?.content || [])
+    } catch (error) {
+      console.error('Failed to fetch user posts:', error)
+    } finally {
+      setLoadingPosts(false)
+    }
+  }
+
+  const handlePostCreated = (newPost) => {
+    setUserPosts((prev) => [newPost, ...prev])
+    setIsPostModalOpen(false)
+  }
+
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm('Delete this post permanently?')) return
+    try {
+      await api.delete(`/api/v1/posts/${postId}`)
+      setUserPosts((prev) => prev.filter((p) => p.id !== postId))
+    } catch (error) {
+      console.error('Failed to delete post', error)
+      alert('Could not delete post')
+    }
+  }
+
+  const formatRelativeTime = (value) => {
+    if (!value) return 'Just now'
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return 'Recently'
+    const diff = Date.now() - date.getTime()
+    const hours = Math.max(1, Math.round(diff / 3600000))
+    if (hours < 24) return `${hours}h`
+    const days = Math.round(hours / 24)
+    if (days < 7) return `${days}d`
+    const weeks = Math.round(days / 7)
+    if (weeks < 4) return `${weeks}w`
+    return date.toLocaleDateString()
+  }
 
   const skillsArray = Array.isArray(profile?.skills)
     ? profile.skills.filter(Boolean)
@@ -62,6 +122,10 @@ export default function Profile() {
       const { data } = await api.patch(`${apiBase}/${enrollmentNumber}`, payload)
       handleAuthUpdate(data)
       setMsg('Profile updated successfully')
+      setTimeout(() => {
+        setMsg('')
+        setIsEditing(false)
+      }, 1500)
     } catch (error) {
       console.error('Profile update failed', error)
       const message = error.response?.data?.message || 'Profile update failed'
@@ -154,6 +218,11 @@ export default function Profile() {
     )
   }
 
+  const surface = theme === 'dark'
+    ? 'bg-slate-900/60 border border-slate-800 shadow-[0_0_0_1px_rgba(15,23,42,0.65)]'
+    : 'bg-sky-50/90 border border-sky-100 shadow-sm'
+  const subtleText = theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+
   const initials = ((profile.name || profile.enrollmentNumber || 'U') + '').trim().charAt(0).toUpperCase()
 
   return (
@@ -162,7 +231,7 @@ export default function Profile() {
       <div className="mx-auto max-w-6xl px-4 py-10 lg:py-14">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-[360px,1fr]">
           <aside className="space-y-6">
-            <div className="rounded-3xl border border-slate-200 bg-sky-50/90 p-6 shadow-xl shadow-indigo-500/5 ring-1 ring-sky-100 backdrop-blur dark:border-slate-800 dark:bg-slate-950/70 dark:ring-white/5">
+            <div className={`rounded-3xl p-6 ring-1 ring-sky-100 backdrop-blur dark:ring-white/5 ${surface}`}>
               <div className="flex flex-col items-center text-center">
                 {profile.avatarUrl ? (
                   <img src={profile.avatarUrl} alt="Avatar" className="h-32 w-32 rounded-full border-4 border-indigo-500 object-cover shadow-lg" />
@@ -235,133 +304,225 @@ export default function Profile() {
                 )}
               </div>
 
-              <button
-                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-xl"
-                onClick={generateShareLink}
-              >
-                Share profile
-              </button>
+              <div className="mt-6 flex flex-col gap-3">
+                <button
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:shadow-xl"
+                  onClick={generateShareLink}
+                >
+                  Share profile
+                </button>
+                <button
+                  className={`inline-flex w-full items-center justify-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold transition ${
+                    isEditing 
+                      ? 'border-slate-300 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
+                      : 'border-indigo-500 text-indigo-600 hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-400 dark:hover:bg-indigo-500/10'
+                  }`}
+                  onClick={() => setIsEditing(!isEditing)}
+                >
+                  {isEditing ? 'Cancel Editing' : 'Edit Profile'}
+                </button>
+              </div>
             </div>
           </aside>
 
           <main className="space-y-6">
-            <div className="rounded-3xl border border-slate-200 bg-sky-50/90 p-6 shadow-xl shadow-indigo-500/5 ring-1 ring-sky-100 backdrop-blur dark:border-slate-800 dark:bg-slate-950/70 dark:ring-white/5">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Edit Profile</h2>
-                {msg && (
-                  <span className={`text-sm font-semibold ${msg.includes('failed') ? 'text-rose-500' : 'text-emerald-500'}`}>
-                    {msg}
-                  </span>
+            {isEditing ? (
+              <div className={`rounded-3xl p-6 ring-1 ring-sky-100 backdrop-blur dark:ring-white/5 ${surface}`}>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Edit Profile</h2>
+                  {msg && (
+                    <span className={`text-sm font-semibold ${msg.includes('failed') ? 'text-rose-500' : 'text-emerald-500'}`}>
+                      {msg}
+                    </span>
+                  )}
+                </div>
+
+                <section className="mt-6 space-y-4">
+                  <p className="text-sm font-semibold text-slate-500">Profile Picture</p>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <label className="rounded-2xl border border-slate-200/80 p-4 text-sm text-slate-600 shadow-inner dark:border-slate-800/80 dark:text-slate-300">
+                      <span className="font-medium text-slate-700 dark:text-slate-200">Upload from file</span>
+                      <input type="file" accept="image/*" onChange={(e) => setAvatarFile(e.target.files?.[0] || null)} className="mt-3 block text-xs" />
+                      <button
+                        type="button"
+                        className="mt-3 inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-900"
+                        onClick={uploadAvatarFile}
+                        disabled={!avatarFile}
+                      >
+                        Upload
+                      </button>
+                    </label>
+                    <label className="rounded-2xl border border-slate-200/80 p-4 text-sm text-slate-600 shadow-inner dark:border-slate-800/80 dark:text-slate-300">
+                      <span className="font-medium text-slate-700 dark:text-slate-200">Or set image by URL</span>
+                      <input className={`${inputClasses} mt-3`} placeholder="https://example.com/image.jpg" value={avatarUrlInput} onChange={(e) => setAvatarUrlInput(e.target.value)} />
+                      <button
+                        type="button"
+                        className="mt-3 inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:border-indigo-500 hover:text-indigo-600 dark:border-slate-600 dark:text-slate-200"
+                        onClick={setAvatarByUrl}
+                      >
+                        Set URL
+                      </button>
+                    </label>
+                  </div>
+                </section>
+
+                <section className="mt-8 space-y-4">
+                  <p className="text-sm font-semibold text-slate-500">Basic Information</p>
+                  <div className="space-y-4">
+                    <label className="block text-sm font-medium text-slate-600 dark:text-slate-200">
+                      Name
+                      <input className={inputClasses} value={profile.name || ''} onChange={(e) => setProfile({ ...profile, name: e.target.value })} />
+                    </label>
+                    <label className="block text-sm font-medium text-slate-600 dark:text-slate-200">
+                      Email
+                      <input className={inputClasses} value={profile.email || ''} onChange={(e) => setProfile({ ...profile, email: e.target.value })} />
+                    </label>
+                  </div>
+                </section>
+
+                <section className="mt-8 space-y-4">
+                  <p className="text-sm font-semibold text-slate-500">About You</p>
+                  <label className="block text-sm font-medium text-slate-600 dark:text-slate-200">
+                    Bio
+                    <textarea
+                      className={`${inputClasses} resize-none`}
+                      rows={4}
+                      placeholder="Tell us about yourself, your interests, and goals..."
+                      value={profile.bio || ''}
+                      onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                    />
+                  </label>
+                  <label className="block text-sm font-medium text-slate-600 dark:text-slate-200">
+                    Skills (comma-separated)
+                    <input
+                      className={inputClasses}
+                      placeholder="e.g. JavaScript, React, SQL"
+                      value={Array.isArray(profile.skills) ? profile.skills.join(', ') : profile.skills || ''}
+                      onChange={(e) => setProfile({ ...profile, skills: e.target.value })}
+                    />
+                  </label>
+                </section>
+
+                <section className="mt-8 space-y-4">
+                  <p className="text-sm font-semibold text-slate-500">Social Links</p>
+                  <label className="block text-sm font-medium text-slate-600 dark:text-slate-200">
+                    GitHub URL
+                    <input
+                      className={inputClasses}
+                      placeholder="https://github.com/username"
+                      value={profile.githubUrl || ''}
+                      onChange={(e) => setProfile({ ...profile, githubUrl: e.target.value })}
+                    />
+                  </label>
+                  <label className="block text-sm font-medium text-slate-600 dark:text-slate-200">
+                    LinkedIn URL
+                    <input
+                      className={inputClasses}
+                      placeholder="https://www.linkedin.com/in/username"
+                      value={profile.linkedinUrl || ''}
+                      onChange={(e) => setProfile({ ...profile, linkedinUrl: e.target.value })}
+                    />
+                  </label>
+                </section>
+
+                <div className="mt-8 flex flex-wrap items-center gap-4">
+                  <button className="inline-flex items-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:bg-indigo-500" onClick={save}>
+                    Save Changes
+                  </button>
+                  {msg && (
+                    <p className={`text-sm font-semibold ${msg.includes('failed') ? 'text-rose-500' : 'text-emerald-500'}`}>
+                      {msg}
+                    </p>
+                  )}
+                </div>
+
+                <div className="mt-10 rounded-2xl border border-rose-200/60 bg-rose-50/60 p-6 dark:border-rose-500/30 dark:bg-rose-500/10">
+                  <p className="text-sm font-semibold uppercase tracking-wide text-rose-600">Danger Zone</p>
+                  <p className="mt-3 text-sm text-rose-500">Once you delete your account, there is no going back. Please be certain.</p>
+                  <button className="mt-4 inline-flex items-center rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-rose-500" onClick={() => setShowDeleteModal(true)}>
+                    Delete Account
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">My Posts</h2>
+                  <div className="flex items-center gap-3">
+                    {userType === 'alumni' && (
+                      <button
+                        onClick={() => setIsPostModalOpen(true)}
+                        className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-indigo-500"
+                      >
+                        <span>+</span> Post
+                      </button>
+                    )}
+                    <span className={`text-sm font-medium ${subtleText}`}>
+                      {userPosts.length} {userPosts.length === 1 ? 'post' : 'posts'}
+                    </span>
+                  </div>
+                </div>
+
+                {loadingPosts ? (
+                  <div className="flex justify-center py-20">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
+                  </div>
+                ) : userPosts.length === 0 ? (
+                  <div className={`rounded-3xl p-10 text-center ring-1 ring-sky-100 backdrop-blur dark:ring-white/5 ${surface}`}>
+                    <p className="text-lg font-semibold text-slate-900 dark:text-white">You haven't posted anything yet</p>
+                    <p className={`mt-2 text-sm ${subtleText}`}>
+                      Share your thoughts, experiences, or opportunities with the community.
+                    </p>
+                    <button 
+                      onClick={() => navigate('/feed')}
+                      className="mt-6 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-500"
+                    >
+                      Go to Feed
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid gap-6">
+                    {userPosts.map((post) => (
+                      <article key={post.id} className={`rounded-3xl p-6 ring-1 ring-sky-100 backdrop-blur dark:ring-white/5 ${surface} space-y-4`}>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-sm font-semibold text-white">
+                            {initials}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-slate-900 dark:text-white">{profile.name}</p>
+                            <p className={`text-xs ${subtleText}`}>
+                              {formatRelativeTime(post.createdAt)}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleDeletePost(post.id)}
+                            className="rounded-full border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-500 transition hover:bg-rose-50 dark:border-rose-900/50 dark:hover:bg-rose-500/10"
+                          >
+                            Delete
+                          </button>
+                        </div>
+
+                        {post.content && (
+                          <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                            {post.content}
+                          </p>
+                        )}
+
+                        {post.mediaUrl && (
+                          <div className="overflow-hidden rounded-2xl border border-slate-200/50 dark:border-slate-800/50">
+                            {post.mediaUrl.match(/\.mp4|\.webm$/i) ? (
+                              <video src={post.mediaUrl} controls className="w-full" />
+                            ) : (
+                              <img src={post.mediaUrl} alt="Post content" className="w-full object-cover" />
+                            )}
+                          </div>
+                        )}
+                      </article>
+                    ))}
+                  </div>
                 )}
               </div>
-
-              <section className="mt-6 space-y-4">
-                <p className="text-sm font-semibold text-slate-500">Profile Picture</p>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <label className="rounded-2xl border border-slate-200/80 p-4 text-sm text-slate-600 shadow-inner dark:border-slate-800/80 dark:text-slate-300">
-                    <span className="font-medium text-slate-700 dark:text-slate-200">Upload from file</span>
-                    <input type="file" accept="image/*" onChange={(e) => setAvatarFile(e.target.files?.[0] || null)} className="mt-3 block text-xs" />
-                    <button
-                      type="button"
-                      className="mt-3 inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-900"
-                      onClick={uploadAvatarFile}
-                      disabled={!avatarFile}
-                    >
-                      Upload
-                    </button>
-                  </label>
-                  <label className="rounded-2xl border border-slate-200/80 p-4 text-sm text-slate-600 shadow-inner dark:border-slate-800/80 dark:text-slate-300">
-                    <span className="font-medium text-slate-700 dark:text-slate-200">Or set image by URL</span>
-                    <input className={`${inputClasses} mt-3`} placeholder="https://example.com/image.jpg" value={avatarUrlInput} onChange={(e) => setAvatarUrlInput(e.target.value)} />
-                    <button
-                      type="button"
-                      className="mt-3 inline-flex items-center rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:border-indigo-500 hover:text-indigo-600 dark:border-slate-600 dark:text-slate-200"
-                      onClick={setAvatarByUrl}
-                    >
-                      Set URL
-                    </button>
-                  </label>
-                </div>
-              </section>
-
-              <section className="mt-8 space-y-4">
-                <p className="text-sm font-semibold text-slate-500">Basic Information</p>
-                <div className="space-y-4">
-                  <label className="block text-sm font-medium text-slate-600 dark:text-slate-200">
-                    Name
-                    <input className={inputClasses} value={profile.name || ''} onChange={(e) => setProfile({ ...profile, name: e.target.value })} />
-                  </label>
-                  <label className="block text-sm font-medium text-slate-600 dark:text-slate-200">
-                    Email
-                    <input className={inputClasses} value={profile.email || ''} onChange={(e) => setProfile({ ...profile, email: e.target.value })} />
-                  </label>
-                </div>
-              </section>
-
-              <section className="mt-8 space-y-4">
-                <p className="text-sm font-semibold text-slate-500">About You</p>
-                <label className="block text-sm font-medium text-slate-600 dark:text-slate-200">
-                  Bio
-                  <textarea
-                    className={`${inputClasses} resize-none`}
-                    rows={4}
-                    placeholder="Tell us about yourself, your interests, and goals..."
-                    value={profile.bio || ''}
-                    onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                  />
-                </label>
-                <label className="block text-sm font-medium text-slate-600 dark:text-slate-200">
-                  Skills (comma-separated)
-                  <input
-                    className={inputClasses}
-                    placeholder="e.g. JavaScript, React, SQL"
-                    value={Array.isArray(profile.skills) ? profile.skills.join(', ') : profile.skills || ''}
-                    onChange={(e) => setProfile({ ...profile, skills: e.target.value })}
-                  />
-                </label>
-              </section>
-
-              <section className="mt-8 space-y-4">
-                <p className="text-sm font-semibold text-slate-500">Social Links</p>
-                <label className="block text-sm font-medium text-slate-600 dark:text-slate-200">
-                  GitHub URL
-                  <input
-                    className={inputClasses}
-                    placeholder="https://github.com/username"
-                    value={profile.githubUrl || ''}
-                    onChange={(e) => setProfile({ ...profile, githubUrl: e.target.value })}
-                  />
-                </label>
-                <label className="block text-sm font-medium text-slate-600 dark:text-slate-200">
-                  LinkedIn URL
-                  <input
-                    className={inputClasses}
-                    placeholder="https://www.linkedin.com/in/username"
-                    value={profile.linkedinUrl || ''}
-                    onChange={(e) => setProfile({ ...profile, linkedinUrl: e.target.value })}
-                  />
-                </label>
-              </section>
-
-              <div className="mt-8 flex flex-wrap items-center gap-4">
-                <button className="inline-flex items-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:bg-indigo-500" onClick={save}>
-                  Save Changes
-                </button>
-                {msg && (
-                  <p className={`text-sm font-semibold ${msg.includes('failed') ? 'text-rose-500' : 'text-emerald-500'}`}>
-                    {msg}
-                  </p>
-                )}
-              </div>
-
-              <div className="mt-10 rounded-2xl border border-rose-200/60 bg-rose-50/60 p-6 dark:border-rose-500/30 dark:bg-rose-500/10">
-                <p className="text-sm font-semibold uppercase tracking-wide text-rose-600">Danger Zone</p>
-                <p className="mt-3 text-sm text-rose-500">Once you delete your account, there is no going back. Please be certain.</p>
-                <button className="mt-4 inline-flex items-center rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-rose-500" onClick={() => setShowDeleteModal(true)}>
-                  Delete Account
-                </button>
-              </div>
-            </div>
+            )}
           </main>
         </div>
       </div>
@@ -404,6 +565,31 @@ export default function Profile() {
                 Email
               </a>
             </div>
+          </div>
+        </div>
+      )}
+
+      {isPostModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 px-4 backdrop-blur-sm"
+          onClick={() => setIsPostModalOpen(false)}
+        >
+          <div 
+            className="w-full max-w-xl rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">Create a Post</h3>
+              <button 
+                onClick={() => setIsPostModalOpen(false)}
+                className="rounded-full p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <PostForm onCreated={handlePostCreated} />
           </div>
         </div>
       )}

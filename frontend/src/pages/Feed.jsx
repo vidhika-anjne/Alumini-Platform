@@ -83,6 +83,7 @@ export default function Feed() {
   const [posts, setPosts] = useState([])
   const [postPrompt, setPostPrompt] = useState('')
   const [activeFilter, setActiveFilter] = useState(feedFilters[0])
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false)
   const { userType, user } = useAuth()
   const { theme } = useTheme()
 
@@ -101,9 +102,20 @@ export default function Feed() {
     }
   }
 
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm('Delete this post permanently?')) return
+    try {
+      await api.delete(`/api/v1/posts/${postId}`)
+      setPosts(prev => prev.filter(p => p.id !== postId))
+    } catch (error) {
+      console.error('Failed to delete post', error)
+      alert('Could not delete post')
+    }
+  }
+
   const handleSuggestionClick = (suggestion) => {
     setPostPrompt(suggestion.prompt)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setIsPostModalOpen(true)
   }
 
   useEffect(() => { load() }, [])
@@ -168,7 +180,7 @@ export default function Feed() {
             <div className="flex flex-col gap-3 text-sm">
               <button
                 type="button"
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                onClick={() => setIsPostModalOpen(true)}
                 className="flex items-center justify-between rounded-xl border border-dashed border-slate-300/80 px-4 py-3 text-left font-medium transition hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-700"
               >
                 Start a post
@@ -219,13 +231,10 @@ export default function Feed() {
           </header>
 
           {userType === 'alumni' && (
-            <section className={`${surface} rounded-2xl p-6 space-y-4`}>
-              <p className="text-sm font-semibold">Share an update with the community</p>
+            <section className={`${surface} rounded-2xl p-6`}>
               <PostForm
-                onCreated={() => {
-                  load()
-                  setPostPrompt('')
-                }}
+                minimal
+                onExpand={() => setIsPostModalOpen(true)}
                 initialPrompt={postPrompt}
               />
             </section>
@@ -245,6 +254,7 @@ export default function Feed() {
               const authorName = post.alumni?.fullName || post.alumni?.name || 'Alumni contributor'
               const authorHeadline = post.alumni?.designation || post.alumni?.currentCompany || 'Community mentor'
               const authorInitials = getInitials(authorName)
+              const isOwnPost = userType === 'alumni' && post.alumni?.id === user?.id
 
               return (
                 <article key={post.id} className={`${surface} rounded-2xl p-6 space-y-4`}>
@@ -253,18 +263,30 @@ export default function Feed() {
                       {authorInitials}
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold leading-tight">{authorName}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold leading-tight">{authorName}</p>
+                        <span className={`text-xs ${subtleText}`}>• {formatRelativeTime(post.createdAt)}</span>
+                      </div>
                       <p className={`text-sm ${subtleText}`}>{authorHeadline}</p>
-                      <p className={`text-xs ${subtleText} mt-1`}>
-                        {formatRelativeTime(post.createdAt)} · {post.alumni?.location || 'Global'}
+                      <p className={`text-xs ${subtleText} mt-0.5`}>
+                        {post.alumni?.location || 'Global'}
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      className="rounded-full border border-slate-200 px-4 py-1 text-xs font-semibold text-slate-500 transition hover:border-indigo-200 hover:text-indigo-600 dark:border-slate-700"
-                    >
-                      Follow
-                    </button>
+                    {isOwnPost ? (
+                      <button
+                        onClick={() => handleDeletePost(post.id)}
+                        className="rounded-full border border-rose-200 px-4 py-1 text-xs font-semibold text-rose-500 transition hover:bg-rose-50 dark:border-rose-900/50 dark:hover:bg-rose-500/10"
+                      >
+                        Delete
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="rounded-full border border-slate-200 px-4 py-1 text-xs font-semibold text-slate-500 transition hover:border-indigo-200 hover:text-indigo-600 dark:border-slate-700"
+                      >
+                        Follow
+                      </button>
+                    )}
                   </div>
 
                   {post.content && (
@@ -370,6 +392,40 @@ export default function Feed() {
           </section>
         </aside>
       </div>
+
+      {isPostModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsPostModalOpen(false)
+          }}
+        >
+          <div className={`${surface} w-full max-w-xl rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 duration-200`}>
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold">Create community post</h3>
+                <p className={`text-sm ${subtleText}`}>Share insights, ask for advice, or post opportunities</p>
+              </div>
+              <button
+                onClick={() => setIsPostModalOpen(false)}
+                className="rounded-full p-2 h-10 w-10 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                aria-label="Close modal"
+              >
+                <span className="text-xl">✕</span>
+              </button>
+            </div>
+            
+            <PostForm
+              onCreated={(newPost) => {
+                load()
+                setIsPostModalOpen(false)
+                setPostPrompt('')
+              }}
+              initialPrompt={postPrompt}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

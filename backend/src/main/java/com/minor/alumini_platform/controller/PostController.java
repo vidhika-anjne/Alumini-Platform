@@ -30,11 +30,14 @@ package com.minor.alumini_platform.controller;
 
 import com.minor.alumini_platform.model.Post;
 import com.minor.alumini_platform.service.PostService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/posts")
@@ -57,5 +60,24 @@ public class PostController {
     @GetMapping
     public List<Post> getAllPosts() {
         return postService.getAllPosts();
+    }
+
+    @GetMapping("/alumni/{alumniId}")
+    public List<Post> getPostsByAlumni(@PathVariable Long alumniId) {
+        return postService.getPostsByAlumni(alumniId);
+    }
+
+    @GetMapping("/user/{enrollmentNumber}")
+    public List<Post> getPostsByUser(@PathVariable String enrollmentNumber) {
+        return postService.getPostsByEnrollmentNumber(enrollmentNumber);
+    }
+
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<Map<String, Object>> deletePost(@PathVariable Long postId) {
+        postService.deletePost(postId);
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Post deleted successfully");
+        return ResponseEntity.ok(response);
     }
 }

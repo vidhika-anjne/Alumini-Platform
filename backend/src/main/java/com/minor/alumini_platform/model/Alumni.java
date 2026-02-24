@@ -2,9 +2,7 @@ package com.minor.alumini_platform.model;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.minor.alumini_platform.enums.EmploymentStatus;
 
 import javax.persistence.*;
@@ -42,11 +40,11 @@ public class Alumni {
     private EmploymentStatus employmentStatus;
 
     @OneToMany(mappedBy = "alumni", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JsonManagedReference
+    @JsonIgnoreProperties("alumni")
     private List<Experience> experiences;
 
     @OneToMany(mappedBy = "alumni", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @JsonIgnoreProperties("alumni")
     private List<Post> posts;
 
     // Store pre-computed embeddings as JSON string for performance

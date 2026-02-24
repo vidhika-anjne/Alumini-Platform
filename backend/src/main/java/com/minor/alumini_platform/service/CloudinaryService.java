@@ -20,6 +20,6 @@ public class CloudinaryService {
     public String uploadFile(MultipartFile file) throws IOException {
         Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
                 ObjectUtils.asMap("resource_type", "auto"));
-        return uploadResult.get("url").toString(); // URL to save in DB
+        return uploadResult.get("secure_url").toString(); // Secure URL to save in DB
     }
 }

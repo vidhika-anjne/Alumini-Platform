@@ -42,4 +42,16 @@ public class PostService {
     public List<Post> getAllPosts() {
         return postRepository.findAll();
     }
+
+    public List<Post> getPostsByAlumni(Long alumniId) {
+        return postRepository.findByAlumniIdOrderByCreatedAtDesc(alumniId);
+    }
+
+    public List<Post> getPostsByEnrollmentNumber(String enrollmentNumber) {
+        return postRepository.findByAlumniEnrollmentNumberOrderByCreatedAtDesc(enrollmentNumber);
+    }
+
+    public void deletePost(Long postId) {
+        postRepository.deleteById(postId);
+    }
 }
