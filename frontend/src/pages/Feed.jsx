@@ -139,73 +139,8 @@ export default function Feed() {
       } py-8 px-4 sm:px-6`}
     >
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 lg:flex-row">
-        <aside className="flex flex-col gap-6 lg:w-[260px]">
-          <section className={`${surface} overflow-hidden rounded-2xl`}>
-            <div className={`${heroAccent} h-20 w-full`} />
-            <div className="space-y-4 px-5 pb-6 pt-0">
-              <div className="-mt-8 flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-lg font-semibold text-indigo-600 shadow-lg">
-                  {initials}
-                </div>
-                <div>
-                  <p className="text-lg font-semibold leading-tight">
-                    {user?.fullName || user?.name || 'Welcome back'}
-                  </p>
-                  <p className={`text-sm ${subtleText}`}>
-                    {user?.designation || user?.currentCompany || 'Alumni contributor'}
-                  </p>
-                </div>
-              </div>
-              <div className="rounded-xl  p-4 text-sm">
-                <dl className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <dt className={`${subtleText}`}>Weekly reach</dt>
-                    <dd className="font-semibold">+24%</dd>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <dt className={`${subtleText}`}>Mentorship pings</dt>
-                    <dd className="font-semibold">9</dd>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <dt className={`${subtleText}`}>Profile views</dt>
-                    <dd className="font-semibold">312</dd>
-                  </div>
-                </dl>
-              </div>
-            </div>
-          </section>
-
-          <section className={`${surface} rounded-2xl p-5 space-y-4`}>
-            <p className="text-sm font-semibold">Quick actions</p>
-            <div className="flex flex-col gap-3 text-sm">
-              <button
-                type="button"
-                onClick={() => setIsPostModalOpen(true)}
-                className="flex items-center justify-between rounded-xl border border-dashed border-slate-300/80 px-4 py-3 text-left font-medium transition hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-700"
-              >
-                Start a post
-                <span aria-hidden className="text-xl">✍️</span>
-              </button>
-              <button
-                type="button"
-                className="flex items-center justify-between rounded-xl px-4 py-3 font-medium transition hover:bg-sky-100 dark:hover:bg-slate-800/70"
-              >
-                Schedule mentorship
-                <span aria-hidden className="text-xl">🗂️</span>
-              </button>
-              <button
-                type="button"
-                className="flex items-center justify-between rounded-xl px-4 py-3 font-medium transition hover:bg-sky-100 dark:hover:bg-slate-800/70"
-              >
-                Share opportunity
-                <span aria-hidden className="text-xl">🚀</span>
-              </button>
-            </div>
-          </section>
-        </aside>
-
-        <main className="flex-1 space-y-6">
-          <header className={`${surface} rounded-2xl p-6 space-y-4`}>
+        <main className="flex-1 space-y-6 px-25 ">
+          <header className={`${surface} rounded-2xl py-6 px-10 space-y-4`}>
             <div>
               <p className="text-2xl font-semibold">Community Feed</p>
               <p className={`text-sm ${subtleText}`}>
@@ -301,13 +236,13 @@ export default function Feed() {
                         <video
                           src={post.mediaUrl}
                           controls
-                          className="w-full rounded-2xl border border-slate-200/50"
+                          className="w-full h-[400px] rounded-2xl border border-slate-200/50 object-cover"
                         />
                       ) : (
                         <img
                           src={post.mediaUrl}
                           alt="Shared media"
-                          className="w-full rounded-2xl border border-slate-200/50 object-cover"
+                          className="w-full h-[400px] rounded-2xl border border-slate-200/50 object-cover"
                         />
                       )
                   )}
@@ -335,22 +270,41 @@ export default function Feed() {
         </main>
 
         <aside className="hidden lg:flex w-[280px] flex-col gap-6">
-          <section className={`${surface} rounded-2xl p-6 space-y-4`}>
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold">Trending in alumni circles</p>
-              <span className={`text-xs ${subtleText}`}>Last 24h</span>
+          <section className={`${surface} overflow-hidden rounded-2xl`}>
+            <div className={`${heroAccent} h-20 w-full`} />
+            <div className="space-y-4 px-5 pb-6 pt-0">
+              <div className="-mt-8 flex items-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-lg font-semibold text-indigo-600 shadow-lg">
+                  {initials}
+                </div>
+                <div>
+                  <p className="text-lg font-semibold leading-tight">
+                    {user?.fullName || user?.name || 'Welcome back'}
+                  </p>
+                  <p className={`text-sm ${subtleText}`}>
+                    {user?.designation || user?.currentCompany || 'Alumni contributor'}
+                  </p>
+                </div>
+              </div>
+              <div className="rounded-xl  p-4 text-sm">
+                <dl className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <dt className={`${subtleText}`}>Weekly reach</dt>
+                    <dd className="font-semibold">+24%</dd>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <dt className={`${subtleText}`}>Mentorship pings</dt>
+                    <dd className="font-semibold">9</dd>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <dt className={`${subtleText}`}>Profile views</dt>
+                    <dd className="font-semibold">312</dd>
+                  </div>
+                </dl>
+              </div>
             </div>
-            <ul className="space-y-3 text-sm">
-              {['AI product roles', 'Design hiring sprints', 'Global grad fellowships', 'Remote culture playbooks', 'Scholarship deadlines'].map((topic) => (
-                <li key={topic} className="flex items-center justify-between">
-                  <button type="button" className="text-left font-medium text-slate-700 transition hover:text-indigo-600 dark:text-slate-100">
-                    {topic}
-                  </button>
-                  <span className={`text-xs ${subtleText}`}>• 1.2k reads</span>
-                </li>
-              ))}
-            </ul>
           </section>
+
 
           {userType === 'alumni' && (
             <section className={`${surface} rounded-2xl p-6 space-y-4`}>

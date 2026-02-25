@@ -11,9 +11,7 @@ export default function PostForm({ onCreated, initialPrompt = "", minimal = fals
 
   // Update content when a suggestion card sets a new prompt
   useEffect(() => {
-    if (initialPrompt) {
-      setContent(initialPrompt);
-    }
+    setContent(initialPrompt || "");
   }, [initialPrompt]);
 
   const submit = async (e) => {

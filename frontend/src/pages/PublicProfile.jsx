@@ -240,9 +240,9 @@ export default function PublicProfile() {
                     {post.mediaUrl && (
                       <div className="mt-4 overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800">
                         {post.mediaUrl.match(/\.mp4|\.webm$/i) ? (
-                          <video src={post.mediaUrl} controls className="w-full" />
+                          <video src={post.mediaUrl} controls className="w-full h-[400px] object-cover" />
                         ) : (
-                          <img src={post.mediaUrl} alt="Post content" className="w-full object-cover" />
+                          <img src={post.mediaUrl} alt="Post content" className="w-full h-[400px] object-cover" />
                         )}
                       </div>
                     )}

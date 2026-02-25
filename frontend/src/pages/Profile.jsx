@@ -511,9 +511,9 @@ export default function Profile() {
                         {post.mediaUrl && (
                           <div className="overflow-hidden rounded-2xl border border-slate-200/50 dark:border-slate-800/50">
                             {post.mediaUrl.match(/\.mp4|\.webm$/i) ? (
-                              <video src={post.mediaUrl} controls className="w-full" />
+                              <video src={post.mediaUrl} controls className="w-full h-[400px] object-cover" />
                             ) : (
-                              <img src={post.mediaUrl} alt="Post content" className="w-full object-cover" />
+                              <img src={post.mediaUrl} alt="Post content" className="w-full h-[400px] object-cover" />
                             )}
                           </div>
                         )}

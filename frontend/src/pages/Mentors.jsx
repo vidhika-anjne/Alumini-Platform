@@ -110,9 +110,10 @@ export default function Mentors() {
     }
   }, [token])
 
-  const fetchMentors = async () => {
+  const fetchMentors = async (manualFilters = null) => {
     setLoading(true)
     setError('')
+    const activeFilters = manualFilters || filters
     try {
       if (!token) {
         setResults([])
@@ -127,14 +128,53 @@ export default function Mentors() {
         ? mentors.filter((mentor) => String(mentor.enrollmentNumber) !== normalizedCurrentId)
         : mentors
 
-      setResults(visibleMentors)
+      // Apply filters
+      let filtered = visibleMentors
+      if (activeFilters.name) {
+        filtered = filtered.filter((m) =>
+          m.name?.toLowerCase().includes(activeFilters.name.toLowerCase())
+        )
+      }
+      if (activeFilters.department) {
+        filtered = filtered.filter((m) =>
+          m.department?.toLowerCase().includes(activeFilters.department.toLowerCase())
+        )
+      }
+      if (activeFilters.passingYear) {
+        filtered = filtered.filter((m) =>
+          String(m.passingYear).includes(activeFilters.passingYear)
+        )
+      }
+      if (activeFilters.status) {
+        filtered = filtered.filter((m) =>
+          m.employmentStatus === activeFilters.status
+        )
+      }
+      if (activeFilters.company) {
+        filtered = filtered.filter((m) =>
+          (m.company || '').toLowerCase().includes(activeFilters.company.toLowerCase()) ||
+          (m.experiences || []).some((exp) =>
+            (exp.company || '').toLowerCase().includes(activeFilters.company.toLowerCase())
+          )
+        )
+      }
+      if (activeFilters.jobTitle) {
+        filtered = filtered.filter((m) =>
+          (m.jobTitle || '').toLowerCase().includes(activeFilters.jobTitle.toLowerCase()) ||
+          (m.experiences || []).some((exp) =>
+            (exp.jobTitle || '').toLowerCase().includes(activeFilters.jobTitle.toLowerCase())
+          )
+        )
+      }
 
-      if (token && normalizedCurrentId && visibleMentors.length > 0) {
+      setResults(filtered)
+
+      if (token && normalizedCurrentId && filtered.length > 0) {
         await fetchPendingRequests()
         const myConnections = await fetchMyConnections()
 
         const statusMap = {}
-        for (const mentor of visibleMentors) {
+        for (const mentor of filtered) {
           const mentorId = String(mentor.enrollmentNumber)
 
           const isConnected = myConnections.some((c) =>
@@ -310,7 +350,13 @@ export default function Mentors() {
 
         <section className={`rounded-3xl p-6 ${surfacePanel}`}>
           <p className={`text-sm font-semibold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>Filters</p>
-          <div className="mt-4 grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+          <div className="mt-4 grid gap-4 md:grid-cols-3 lg:grid-cols-7">
+            <input
+              className={fieldClass}
+              placeholder="Full name"
+              value={filters.name}
+              onChange={(e) => setFilters({ ...filters, name: e.target.value })}
+            />
             <input
               className={fieldClass}
               placeholder="Department"
@@ -350,16 +396,32 @@ export default function Mentors() {
               value={filters.jobTitle}
               onChange={(e) => setFilters({ ...filters, jobTitle: e.target.value })}
             />
-            <button
-              type="button"
-              className={`rounded-2xl px-4 py-2 text-sm font-semibold text-white transition disabled:cursor-not-allowed ${
-                isDark ? 'bg-indigo-500 hover:bg-indigo-400' : 'bg-slate-900 hover:bg-slate-800'
-              }`}
-              onClick={() => fetchMentors()}
-              disabled={loading}
-            >
-              {loading ? 'Searching…' : 'Search'}
-            </button>
+            <div className="flex gap-2 lg:col-span-1">
+              <button
+                type="button"
+                className={`flex-1 rounded-2xl px-4 py-2 text-sm font-semibold text-white transition disabled:cursor-not-allowed ${
+                  isDark ? 'bg-indigo-500 hover:bg-indigo-400' : 'bg-slate-900 hover:bg-slate-800'
+                }`}
+                onClick={() => fetchMentors()}
+                disabled={loading}
+              >
+                {loading ? 'Searching…' : 'Search'}
+              </button>
+              <button
+                type="button"
+                title="Clear all filters"
+                className={`rounded-2xl border px-3 py-2 text-sm transition ${
+                  isDark ? 'border-slate-700 text-slate-400 hover:bg-slate-800' : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                }`}
+                onClick={() => {
+                  const emptyFilters = { name: '', department: '', passingYear: '', status: '', company: '', jobTitle: '' }
+                  setFilters(emptyFilters)
+                  fetchMentors(emptyFilters)
+                }}
+              >
+                ✕
+              </button>
+            </div>
           </div>
           {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
           {loading && <p className={`mt-3 text-sm ${subtleText}`}>Loading mentors...</p>}
