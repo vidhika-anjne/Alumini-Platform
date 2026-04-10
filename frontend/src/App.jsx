@@ -27,8 +27,8 @@ export default function App() {
     <div className="flex min-h-screen flex-col">
       <Navbar toggleMobileMenu={toggleMobileMenu} />
       <div className="flex flex-1">
-        {token && <VerticalNavbar isMobileMenuOpen={isMobileMenuOpen} />}
-        <main className={`flex-1 ${token ? 'md:ml-60' : ''}`}>
+        <VerticalNavbar isMobileMenuOpen={isMobileMenuOpen} />
+        <main className="flex-1 md:ml-60">
           <ErrorBoundary>
             <Routes>
               <Route path="/" element={<Navigate to="/feed" replace />} />

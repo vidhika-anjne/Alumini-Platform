@@ -51,8 +51,6 @@ export default function VerticalNavbar({ isMobileMenuOpen }) {
     return () => clearInterval(interval);
   }, [token]);
 
-  if (!token) return null;
-
   return (
     <aside
       className={`fixed left-0 top-0 z-30 h-full w-60 flex-col border-r border-slate-200 bg-white pt-20 dark:border-slate-800 dark:bg-slate-950 md:flex ${
@@ -65,48 +63,67 @@ export default function VerticalNavbar({ isMobileMenuOpen }) {
             <FiHome />
             <span>Home</span>
           </NavLink>
-          <NavLink to="/mentors" className={linkClass}>
-            <FiUsers />
-            <span>Mentors</span>
-          </NavLink>
-          <NavLink to="/chat" className={linkClass}>
-            <FiMessageSquare />
-            <span>Chat</span>
-          </NavLink>
-          <NavLink to="/notifications" className={linkClass}>
-            <FiBell />
-            <span>Notifications</span>
-            {notificationCount > 0 && (
-              <span className="ml-auto inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-                {notificationCount}
-              </span>
-            )}
-          </NavLink>
-          <NavLink to="/ai-search" className={linkClass}>
-            <FaRobot />
-            <span>AI Search</span>
-          </NavLink>
+          {token ? (
+            <>
+              <NavLink to="/mentors" className={linkClass}>
+                <FiUsers />
+                <span>Mentors</span>
+              </NavLink>
+              <NavLink to="/chat" className={linkClass}>
+                <FiMessageSquare />
+                <span>Chat</span>
+              </NavLink>
+              <NavLink to="/notifications" className={linkClass}>
+                <FiBell />
+                <span>Notifications</span>
+                {notificationCount > 0 && (
+                  <span className="ml-auto inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                    {notificationCount}
+                  </span>
+                )}
+              </NavLink>
+              <NavLink to="/ai-search" className={linkClass}>
+                <FaRobot />
+                <span>AI Search</span>
+              </NavLink>
+            </>
+          ) : (
+            <>
+              <NavLink to="/login" className={linkClass}>
+                <FiUser />
+                <span>Sign in</span>
+              </NavLink>
+              <NavLink to="/register" className={linkClass}>
+                <CgProfile />
+                <span>Join</span>
+              </NavLink>
+            </>
+          )}
         </nav>
         <div className="mt-auto flex flex-col gap-2 pb-4">
-          <Link
-            to="/profile"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-white">
-              {avatar}
-            </div>
-            <div className="flex flex-col">
-              <span className="font-semibold">{user?.name || 'User'}</span>
-              <span className="text-xs text-slate-500">{user?.enrollmentNumber}</span>
-            </div>
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"
-          >
-            <FiLogOut />
-            <span>Logout</span>
-          </button>
+          {token && (
+            <>
+              <Link
+                to="/profile"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-white">
+                  {avatar}
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-semibold">{user?.name || 'User'}</span>
+                  <span className="text-xs text-slate-500">{user?.enrollmentNumber}</span>
+                </div>
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"
+              >
+                <FiLogOut />
+                <span>Logout</span>
+              </button>
+            </>
+          )}
           <button
             onClick={toggle}
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"

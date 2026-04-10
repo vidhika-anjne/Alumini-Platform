@@ -84,7 +84,7 @@ export default function Feed() {
   const [postPrompt, setPostPrompt] = useState('')
   const [activeFilter, setActiveFilter] = useState(feedFilters[0])
   const [isPostModalOpen, setIsPostModalOpen] = useState(false)
-  const { userType, user } = useAuth()
+  const { token, userType, user } = useAuth()
   const { theme } = useTheme()
 
   const load = async () => {
@@ -129,6 +129,7 @@ export default function Feed() {
     : 'bg-gradient-to-r from-sky-100 via-indigo-100 to-purple-100'
   const postsList = Array.isArray(posts) ? posts : []
   const initials = getInitials(user?.fullName || user?.name)
+  const isAuthenticated = !!token
 
   return (
     <div
@@ -270,40 +271,66 @@ export default function Feed() {
         </main>
 
         <aside className="hidden lg:flex w-[280px] flex-col gap-6">
-          <section className={`${surface} overflow-hidden rounded-2xl`}>
-            <div className={`${heroAccent} h-20 w-full`} />
-            <div className="space-y-4 px-5 pb-6 pt-0">
-              <div className="-mt-8 flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-lg font-semibold text-indigo-600 shadow-lg">
-                  {initials}
+          {isAuthenticated ? (
+            <section className={`${surface} overflow-hidden rounded-2xl`}>
+              <div className={`${heroAccent} h-20 w-full`} />
+              <div className="space-y-4 px-5 pb-6 pt-0">
+                <div className="-mt-8 flex items-center gap-4">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-lg font-semibold text-indigo-600 shadow-lg">
+                    {initials}
+                  </div>
+                  <div>
+                    <p className="text-lg font-semibold leading-tight">
+                      {user?.fullName || user?.name || 'Welcome back'}
+                    </p>
+                    <p className={`text-sm ${subtleText}`}>
+                      {user?.designation || user?.currentCompany || 'Alumni contributor'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-lg font-semibold leading-tight">
-                    {user?.fullName || user?.name || 'Welcome back'}
-                  </p>
-                  <p className={`text-sm ${subtleText}`}>
-                    {user?.designation || user?.currentCompany || 'Alumni contributor'}
-                  </p>
+                <div className="rounded-xl p-4 text-sm">
+                  <dl className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <dt className={`${subtleText}`}>Weekly reach</dt>
+                      <dd className="font-semibold">+24%</dd>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <dt className={`${subtleText}`}>Mentorship pings</dt>
+                      <dd className="font-semibold">9</dd>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <dt className={`${subtleText}`}>Profile views</dt>
+                      <dd className="font-semibold">312</dd>
+                    </div>
+                  </dl>
                 </div>
               </div>
-              <div className="rounded-xl  p-4 text-sm">
-                <dl className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <dt className={`${subtleText}`}>Weekly reach</dt>
-                    <dd className="font-semibold">+24%</dd>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <dt className={`${subtleText}`}>Mentorship pings</dt>
-                    <dd className="font-semibold">9</dd>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <dt className={`${subtleText}`}>Profile views</dt>
-                    <dd className="font-semibold">312</dd>
-                  </div>
-                </dl>
+            </section>
+          ) : (
+            <section className={`${surface} overflow-hidden rounded-2xl`}>
+              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 h-20 w-full" />
+              <div className="space-y-4 px-5 pb-6 pt-4">
+                <p className="text-lg font-semibold leading-tight">Join the community</p>
+                <p className={`text-sm ${subtleText}`}>
+                  Connect with alumni, find mentors, and get career insights.
+                </p>
+                <div className="flex flex-col gap-2">
+                  <a
+                    href="/register"
+                    className="block rounded-full bg-indigo-600 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-indigo-700"
+                  >
+                    Create account
+                  </a>
+                  <a
+                    href="/login"
+                    className="block rounded-full border border-slate-200 px-4 py-2 text-center text-sm font-medium transition hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-700"
+                  >
+                    Sign in
+                  </a>
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
+          )}
 
 
           {userType === 'alumni' && (

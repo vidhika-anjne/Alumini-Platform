@@ -4,7 +4,6 @@ import { searchAlumniByAI, checkEmbeddingServiceHealth } from '../api/embedding'
 import { getProfile, getConnectionStatus, sendConnectionRequest } from '../api/profile'
 import api from '../api/client'
 import { useAuth } from '../context/AuthContext'
-import './AISearch.css'
 
 export default function AISearch() {
   const { token, user } = useAuth()
@@ -68,7 +67,7 @@ export default function AISearch() {
   useEffect(() => {
     const fetchAllStatuses = async () => {
       if (!results.length || !token) return
-      
+
       const statuses = {}
       for (const result of results) {
         const status = await fetchConnectionStatus(result.alumni.enrollmentNumber)
@@ -76,14 +75,14 @@ export default function AISearch() {
       }
       setConnectionStatus(statuses)
     }
-    
+
     fetchAllStatuses()
   }, [results, token, fetchConnectionStatus])
 
   // Handle search
   const handleSearch = async (e) => {
     e?.preventDefault()
-    
+
     if (!query.trim()) {
       setError('Please enter a search query')
       return
@@ -92,11 +91,11 @@ export default function AISearch() {
     setSearching(true)
     setLoading(true)
     setError('')
-    
+
     try {
       const data = await searchAlumniByAI(query, 10)
       setResults(data.results || [])
-      
+
       if (!data.results || data.results.length === 0) {
         setError('No matching alumni found. Try a different query.')
       }
@@ -118,8 +117,7 @@ export default function AISearch() {
 
   // Handle view profile
   const handleViewProfile = (alumni) => {
-    const type = 'alumni'
-    navigate(`/profile/${type}/${alumni.enrollmentNumber}`)
+    navigate(`/profile/alumni/${alumni.enrollmentNumber}`)
   }
 
   // Handle connect
@@ -131,13 +129,10 @@ export default function AISearch() {
 
     try {
       await sendConnectionRequest(alumni.enrollmentNumber)
-      
-      // Update status
       setConnectionStatus(prev => ({
         ...prev,
         [alumni.enrollmentNumber]: 'PENDING'
       }))
-      
       alert(`Connection request sent to ${alumni.name}`)
     } catch (err) {
       console.error('Connect error:', err)
@@ -145,81 +140,72 @@ export default function AISearch() {
     }
   }
 
-  // Get similarity percentage
-  const getSimilarityPercentage = (similarity) => {
-    return Math.round(similarity * 100)
-  }
+  const getSimilarityPercentage = (similarity) => Math.round(similarity * 100)
 
-  // Get match quality label
   const getMatchQuality = (similarity) => {
-    if (similarity >= 0.7) return { label: 'Excellent Match', color: '#10b981' }
-    if (similarity >= 0.5) return { label: 'Good Match', color: '#3b82f6' }
-    if (similarity >= 0.3) return { label: 'Fair Match', color: '#f59e0b' }
-    return { label: 'Low Match', color: '#6b7280' }
+    if (similarity >= 0.7) return { label: 'Excellent Match', colorClass: 'text-emerald-500', borderClass: 'border-emerald-500' }
+    if (similarity >= 0.5) return { label: 'Good Match', colorClass: 'text-blue-500', borderClass: 'border-blue-500' }
+    if (similarity >= 0.3) return { label: 'Fair Match', colorClass: 'text-amber-500', borderClass: 'border-amber-500' }
+    return { label: 'Low Match', colorClass: 'text-slate-400', borderClass: 'border-slate-400' }
   }
 
   return (
-    <div className="ai-search-page">
-      <div className="ai-search-header">
-        <h1>🤖 AI-Powered Alumni Search</h1>
-        <p className="subtitle">
+    <div className="min-h-screen bg-slate-50 px-4 py-8 dark:bg-slate-900 sm:px-6 lg:px-8">
+
+      {/* Header */}
+      <div className="mb-8 text-center">
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">🤖 AI-Powered Alumni Search</h1>
+        <p className="mt-2 text-slate-500 dark:text-slate-400">
           Use natural language to find alumni with specific skills, experience, or expertise
         </p>
       </div>
 
+      {/* Service Warning */}
       {!serviceAvailable && (
-        <div className="service-warning">
-          <span>⚠️ AI Search service is currently unavailable. Please ensure the embedding service is running.</span>
-          <button 
-            className="btn-retry" 
+        <div className="mb-6 flex items-center rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-800 dark:border-amber-600 dark:bg-amber-900/30 dark:text-amber-300">
+          <span className="flex-1">⚠️ AI Search service is currently unavailable. Please ensure the embedding service is running.</span>
+          <button
             onClick={checkServiceStatus}
-            style={{ 
-              marginLeft: '15px', 
-              padding: '2px 8px', 
-              background: '#fef3c7', 
-              border: '1px solid #f59e0b',
-              borderRadius: '4px',
-              fontSize: '0.8rem',
-              cursor: 'pointer'
-            }}
+            className="ml-4 rounded border border-amber-400 px-2 py-1 text-xs transition hover:bg-amber-100 dark:border-amber-500 dark:hover:bg-amber-800/40"
           >
-            🔄 Retry Connection
+            🔄 Retry
           </button>
         </div>
       )}
 
-      <div className="search-container">
-        <form onSubmit={handleSearch} className="search-form">
-          <div className="search-input-wrapper">
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="e.g., I need a mentor in machine learning and Python"
-              className="search-input"
-              disabled={!serviceAvailable}
-            />
-            <button 
-              type="submit" 
-              className="search-button"
-              disabled={loading || !serviceAvailable || !query.trim()}
-            >
-              {loading ? '🔄 Searching...' : '🔍 Search'}
-            </button>
-          </div>
+      {/* Search Box */}
+      <div className="mx-auto max-w-2xl">
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="e.g., I need a mentor in machine learning and Python"
+            disabled={!serviceAvailable}
+            className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 dark:focus:border-indigo-400"
+          />
+          <button
+            type="submit"
+            disabled={loading || !serviceAvailable || !query.trim()}
+            className="rounded-xl bg-indigo-600 px-5 py-3 font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+          >
+            {loading ? '🔄 Searching...' : '🔍 Search'}
+          </button>
         </form>
 
         {/* Example Queries */}
         {!searching && results.length === 0 && (
-          <div className="example-queries">
-            <h3>Try these example searches:</h3>
-            <div className="example-chips">
+          <div className="mt-6">
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              Try these example searches:
+            </h3>
+            <div className="flex flex-wrap gap-2">
               {exampleQueries.map((example, idx) => (
                 <button
                   key={idx}
-                  className="example-chip"
                   onClick={() => handleExampleClick(example)}
                   disabled={!serviceAvailable}
+                  className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-600 transition hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-600 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-indigo-500 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
                 >
                   {example}
                 </button>
@@ -230,144 +216,148 @@ export default function AISearch() {
 
         {/* Error Message */}
         {error && (
-          <div className="error-message">
+          <div className="mt-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-600 dark:bg-red-900/30 dark:text-red-400">
             {error}
-          </div>
-        )}
-
-        {/* Search Results */}
-        {results.length > 0 && (
-          <div className="results-section">
-            <h2>Found {results.length} matching alumni</h2>
-            <p className="results-subtitle">
-              Showing results for: <strong>"{query}"</strong>
-            </p>
-
-            <div className="results-grid">
-              {results.map((result, idx) => {
-                const alumni = result.alumni
-                const similarity = result.similarity
-                const matchQuality = getMatchQuality(similarity)
-                const status = connectionStatus[alumni.enrollmentNumber] || 'NONE'
-                const isCurrentUser = alumni.enrollmentNumber === currentId
-
-                return (
-                  <div key={idx} className="alumni-card">
-                    <div className="card-header">
-                      <div className="alumni-info">
-                        {alumni.avatarUrl ? (
-                          <img 
-                            src={alumni.avatarUrl} 
-                            alt={alumni.name} 
-                            className="alumni-avatar"
-                          />
-                        ) : (
-                          <div className="alumni-avatar">
-                            {alumni.name?.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                        <div>
-                          <h3 className="alumni-name">{alumni.name}</h3>
-                          <p className="alumni-department">{alumni.department}</p>
-                          <p className="alumni-year">Class of {alumni.passingYear}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="match-score">
-                        <div 
-                          className="score-circle"
-                          style={{ borderColor: matchQuality.color }}
-                        >
-                          <span className="score-number">
-                            {getSimilarityPercentage(similarity)}%
-                          </span>
-                        </div>
-                        <span 
-                          className="match-label"
-                          style={{ color: matchQuality.color }}
-                        >
-                          {matchQuality.label}
-                        </span>
-                      </div>
-                    </div>
-
-                    {alumni.bio && (
-                      <div className="alumni-bio">
-                        <p>{alumni.bio.substring(0, 150)}{alumni.bio.length > 150 ? '...' : ''}</p>
-                      </div>
-                    )}
-
-                    {alumni.employmentStatus && (
-                      <div className="alumni-status">
-                        <span className={`status-badge status-${alumni.employmentStatus.toLowerCase()}`}>
-                          {alumni.employmentStatus.replace(/_/g, ' ')}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="card-actions">
-                      <button 
-                        className="btn-view-profile"
-                        onClick={() => handleViewProfile(alumni)}
-                      >
-                        👤 View Profile
-                      </button>
-                      
-                      {!isCurrentUser && token && (
-                        <>
-                          {status === 'CONNECTED' ? (
-                            <button className="btn-connected" disabled>
-                              ✓ Connected
-                            </button>
-                          ) : status === 'PENDING' ? (
-                            <button className="btn-pending" disabled>
-                              ⏳ Pending
-                            </button>
-                          ) : (
-                            <button 
-                              className="btn-connect"
-                              onClick={() => handleConnect(alumni)}
-                            >
-                              🤝 Connect
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Loading State */}
-        {loading && (
-          <div className="loading-state">
-            <div className="spinner"></div>
-            <p>Analyzing profiles with AI...</p>
           </div>
         )}
       </div>
 
+      {/* Search Results */}
+      {results.length > 0 && (
+        <div className="mt-10">
+          <h2 className="mb-1 text-xl font-bold text-slate-900 dark:text-white">
+            Found {results.length} matching alumni
+          </h2>
+          <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
+            Showing results for: <strong className="text-slate-700 dark:text-slate-200">"{query}"</strong>
+          </p>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {results.map((result, idx) => {
+              const alumni = result.alumni
+              const similarity = result.similarity
+              const matchQuality = getMatchQuality(similarity)
+              const status = connectionStatus[alumni.enrollmentNumber] || 'NONE'
+              const isCurrentUser = alumni.enrollmentNumber === currentId
+
+              return (
+                <div
+                  key={idx}
+                  className="flex flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
+                >
+                  {/* Card Header */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      {alumni.avatarUrl ? (
+                        <img
+                          src={alumni.avatarUrl}
+                          alt={alumni.name}
+                          className="h-12 w-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-xl font-bold text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400">
+                          {alumni.name?.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white">{alumni.name}</h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{alumni.department}</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500">Class of {alumni.passingYear}</p>
+                      </div>
+                    </div>
+
+                    {/* Match Score */}
+                    <div className="flex flex-col items-center gap-1">
+                      <div className={`flex h-14 w-14 items-center justify-center rounded-full border-2 ${matchQuality.borderClass}`}>
+                        <span className={`text-sm font-bold ${matchQuality.colorClass}`}>
+                          {getSimilarityPercentage(similarity)}%
+                        </span>
+                      </div>
+                      <span className={`text-xs font-medium ${matchQuality.colorClass}`}>
+                        {matchQuality.label}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Bio */}
+                  {alumni.bio && (
+                    <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
+                      {alumni.bio.substring(0, 150)}{alumni.bio.length > 150 ? '...' : ''}
+                    </p>
+                  )}
+
+                  {/* Employment Status */}
+                  {alumni.employmentStatus && (
+                    <div className="mt-3">
+                      <span className="inline-block rounded-full bg-slate-100 px-3 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                        {alumni.employmentStatus.replace(/_/g, ' ')}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => handleViewProfile(alumni)}
+                      className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-600 dark:border-slate-600 dark:bg-transparent dark:text-slate-200 dark:hover:border-indigo-500 dark:hover:bg-indigo-900/20"
+                    >
+                      👤 View Profile
+                    </button>
+
+                    {!isCurrentUser && token && (
+                      <>
+                        {status === 'CONNECTED' ? (
+                          <button disabled className="flex-1 rounded-lg bg-emerald-100 px-3 py-1.5 text-sm font-medium text-emerald-700 opacity-80 dark:bg-emerald-900/30 dark:text-emerald-400">
+                            ✓ Connected
+                          </button>
+                        ) : status === 'PENDING' ? (
+                          <button disabled className="flex-1 rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-700 opacity-80 dark:bg-amber-900/30 dark:text-amber-400">
+                            ⏳ Pending
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleConnect(alumni)}
+                            className="flex-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                          >
+                            🤝 Connect
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <div className="mt-12 flex flex-col items-center gap-4 text-slate-500 dark:text-slate-400">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600 dark:border-slate-700 dark:border-t-indigo-400" />
+          <p>Analyzing profiles with AI...</p>
+        </div>
+      )}
+
       {/* Info Section */}
-      <div className="info-section">
-        <h3>How AI Search Works</h3>
-        <div className="info-cards">
-          <div className="info-card">
-            <span className="info-icon">🧠</span>
-            <h4>Semantic Understanding</h4>
-            <p>Understands the meaning of your query, not just keywords</p>
+      <div className="mt-16 rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
+        <h3 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">How AI Search Works</h3>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="flex flex-col items-center rounded-lg bg-slate-50 p-4 text-center dark:bg-slate-700/50">
+            <span className="mb-2 text-3xl">🧠</span>
+            <h4 className="font-semibold text-slate-800 dark:text-white">Semantic Understanding</h4>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Understands the meaning of your query, not just keywords</p>
           </div>
-          <div className="info-card">
-            <span className="info-icon">🎯</span>
-            <h4>Smart Matching</h4>
-            <p>Matches based on skills, experience, and expertise</p>
+          <div className="flex flex-col items-center rounded-lg bg-slate-50 p-4 text-center dark:bg-slate-700/50">
+            <span className="mb-2 text-3xl">🎯</span>
+            <h4 className="font-semibold text-slate-800 dark:text-white">Smart Matching</h4>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Matches based on skills, experience, and expertise</p>
           </div>
-          <div className="info-card">
-            <span className="info-icon">⚡</span>
-            <h4>Instant Results</h4>
-            <p>Get relevant alumni suggestions in seconds</p>
+          <div className="flex flex-col items-center rounded-lg bg-slate-50 p-4 text-center dark:bg-slate-700/50">
+            <span className="mb-2 text-3xl">⚡</span>
+            <h4 className="font-semibold text-slate-800 dark:text-white">Instant Results</h4>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Get relevant alumni suggestions in seconds</p>
           </div>
         </div>
       </div>
